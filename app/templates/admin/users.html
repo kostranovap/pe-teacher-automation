@@ -1,0 +1,207 @@
+{% extends "base.html" %}
+
+{% block title %}Пользователи{% endblock %}
+
+{% block content %}
+<!-- Header -->
+<div class="row mb-4">
+    <div class="col">
+        <nav aria-label="breadcrumb">
+            <ol class="breadcrumb">
+                <li class="breadcrumb-item">
+                    <a href="{{ url_for('admin.dashboard') }}">Админ-панель</a>
+                </li>
+                <li class="breadcrumb-item active">Пользователи</li>
+            </ol>
+        </nav>
+        
+        <div class="d-flex justify-content-between align-items-center">
+            <h2 class="mb-0">
+                <i class="bi bi-people-fill text-primary me-2"></i>
+                Пользователи
+            </h2>
+            <a href="{{ url_for('admin.create_user') }}" class="btn btn-primary">
+                <i class="bi bi-plus-lg me-1"></i>Создать пользователя
+            </a>
+        </div>
+    </div>
+</div>
+
+<!-- Filters -->
+<div class="row mb-4">
+    <div class="col">
+        <div class="card border-0 shadow-sm">
+            <div class="card-body">
+                <form method="GET" action="{{ url_for('admin.users') }}">
+                    <div class="row g-3">
+                        <div class="col-md-4">
+                            <label for="role" class="form-label">Роль</label>
+                            <select class="form-select" id="role" name="role">
+                                <option value="">Все роли</option>
+                                <option value="admin" {% if request.args.get('role') == 'admin' %}selected{% endif %}>
+                                    Администратор
+                                </option>
+                                <option value="teacher" {% if request.args.get('role') == 'teacher' %}selected{% endif %}>
+                                    Преподаватель
+                                </option>
+                                <option value="department_head" {% if request.args.get('role') == 'department_head' %}selected{% endif %}>
+                                    Заведующий кафедрой
+                                </option>
+                            </select>
+                        </div>
+                        
+                        <div class="col-md-4">
+                            <label for="is_active" class="form-label">Статус</label>
+                            <select class="form-select" id="is_active" name="is_active">
+                                <option value="">Все</option>
+                                <option value="true" {% if request.args.get('is_active') == 'true' %}selected{% endif %}>
+                                    Активные
+                                </option>
+                                <option value="false" {% if request.args.get('is_active') == 'false' %}selected{% endif %}>
+                                    Неактивные
+                                </option>
+                            </select>
+                        </div>
+                        
+                        <div class="col-md-4 d-flex align-items-end">
+                            <button type="submit" class="btn btn-primary me-2">
+                                <i class="bi bi-funnel me-1"></i>Применить
+                            </button>
+                            <a href="{{ url_for('admin.users') }}" class="btn btn-outline-secondary">
+                                <i class="bi bi-x-lg me-1"></i>Сбросить
+                            </a>
+                        </div>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Users Table -->
+{% if users %}
+<div class="card border-0 shadow-sm">
+    <div class="table-responsive">
+        <table class="table table-hover align-middle mb-0">
+            <thead class="table-light">
+                <tr>
+                    <th style="width: 5%;">ID</th>
+                    <th style="width: 30%;">ФИО</th>
+                    <th style="width: 25%;">Email</th>
+                    <th style="width: 15%;">Роль</th>
+                    <th style="width: 10%;">Статус</th>
+                    <th style="width: 15%;" class="text-center">Действия</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for user in users %}
+                <tr>
+                    <td>{{ user.id }}</td>
+                    <td>
+                        <div class="d-flex align-items-center">
+                            <div class="avatar bg-primary text-white rounded-circle me-2 d-flex align-items-center justify-content-center" 
+                                 style="width: 40px; height: 40px;">
+                                {{ user.full_name[0] }}
+                            </div>
+                            <div>
+                                <p class="mb-0 fw-bold">{{ user.full_name }}</p>
+                                <small class="text-muted">
+                                    Создан: {{ user.created_at|format_date }}
+                                </small>
+                            </div>
+                        </div>
+                    </td>
+                    <td>
+                        <i class="bi bi-envelope me-1 text-muted"></i>
+                        {{ user.email }}
+                    </td>
+                    <td>
+                        <span class="badge bg-{{ user.role|replace('admin', 'danger')|replace('teacher', 'primary')|replace('department_head', 'success') }}">
+                            {% if user.role == 'admin' %}
+                                Администратор
+                            {% elif user.role == 'teacher' %}
+                                Преподаватель
+                            {% elif user.role == 'department_head' %}
+                                Заведующий
+                            {% else %}
+                                {{ user.role }}
+                            {% endif %}
+                        </span>
+                    </td>
+                    <td>
+                        {% if user.is_active %}
+                        <span class="badge bg-success">
+                            <i class="bi bi-check-circle me-1"></i>Активен
+                        </span>
+                        {% else %}
+                        <span class="badge bg-secondary">
+                            <i class="bi bi-x-circle me-1"></i>Неактивен
+                        </span>
+                        {% endif %}
+                    </td>
+                    <td class="text-center">
+                        <div class="btn-group btn-group-sm" role="group">
+                            <a href="{{ url_for('admin.edit_user', user_id=user.id) }}" 
+                               class="btn btn-outline-primary"
+                               data-bs-toggle="tooltip"
+                               title="Редактировать">
+                                <i class="bi bi-pencil"></i>
+                            </a>
+                            {% if user.id != current_user.id %}
+                            <button type="button" 
+                                    class="btn btn-outline-danger"
+                                    data-bs-toggle="tooltip"
+                                    title="Удалить"
+                                    onclick="confirmDelete('{{ user.id }}', '{{ user.full_name }}')">
+                                <i class="bi bi-trash"></i>
+                            </button>
+                            {% endif %}
+                        </div>
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+
+<!-- Summary -->
+<div class="row mt-3">
+    <div class="col text-muted">
+        Всего пользователей: <strong>{{ users|length }}</strong>
+    </div>
+</div>
+
+{% else %}
+<div class="alert alert-info">
+    <i class="bi bi-info-circle me-2"></i>
+    Пользователи не найдены.
+</div>
+{% endif %}
+
+<!-- Delete Form (hidden) -->
+<form method="POST" id="deleteForm" style="display: none;">
+    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+</form>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+function confirmDelete(userId, userName) {
+    if (confirm(`Вы уверены, что хотите удалить пользователя "${userName}"?`)) {
+        const form = document.getElementById('deleteForm');
+        form.action = `{{ url_for('admin.users') }}/${userId}/delete`;
+        form.submit();
+    }
+}
+</script>
+{% endblock %}
+
+{% block extra_css %}
+<style>
+.avatar {
+    font-weight: 600;
+    font-size: 1.1rem;
+}
+</style>
+{% endblock %}

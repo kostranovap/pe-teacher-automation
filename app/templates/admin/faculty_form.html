@@ -1,0 +1,83 @@
+{% extends "base.html" %}
+
+{% block title %}{% if faculty %}Редактировать{% else %}Создать{% endif %} факультет{% endblock %}
+
+{% block content %}
+<!-- Header -->
+<div class="row mb-4">
+    <div class="col">
+        <nav aria-label="breadcrumb">
+            <ol class="breadcrumb">
+                <li class="breadcrumb-item">
+                    <a href="{{ url_for('admin.dashboard') }}">Админ-панель</a>
+                </li>
+                <li class="breadcrumb-item">
+                    <a href="{{ url_for('admin.faculties') }}">Факультеты</a>
+                </li>
+                <li class="breadcrumb-item active">
+                    {% if faculty %}Редактировать{% else %}Создать{% endif %}
+                </li>
+            </ol>
+        </nav>
+        
+        <h2 class="mb-0">
+            <i class="bi bi-building text-primary me-2"></i>
+            {% if faculty %}Редактировать факультет{% else %}Новый факультет{% endif %}
+        </h2>
+    </div>
+</div>
+
+<!-- Form Card -->
+<div class="row justify-content-center">
+    <div class="col-lg-8">
+        <div class="card border-0 shadow-sm">
+            <div class="card-body p-4">
+                <form method="POST">
+                    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                    
+                    <div class="mb-3">
+                        <label for="code" class="form-label">
+                            <i class="bi bi-hash me-1"></i>
+                            Код факультета <span class="text-danger">*</span>
+                        </label>
+                        <input type="text" 
+                               class="form-control" 
+                               id="code" 
+                               name="code" 
+                               placeholder="ФМИ"
+                               value="{{ faculty.code if faculty else '' }}"
+                               required
+                               maxlength="10">
+                        <div class="form-text">Уникальный код для идентификации факультета</div>
+                    </div>
+                    
+                    <div class="mb-4">
+                        <label for="name" class="form-label">
+                            <i class="bi bi-pencil me-1"></i>
+                            Название факультета <span class="text-danger">*</span>
+                        </label>
+                        <input type="text" 
+                               class="form-control" 
+                               id="name" 
+                               name="name" 
+                               placeholder="Факультет математики и информатики"
+                               value="{{ faculty.name if faculty else '' }}"
+                               required>
+                    </div>
+                    
+                    <div class="d-grid gap-2 d-md-flex justify-content-md-between">
+                        <a href="{{ url_for('admin.faculties') }}" class="btn btn-outline-secondary">
+                            <i class="bi bi-arrow-left me-1"></i>
+                            Отмена
+                        </a>
+                        <button type="submit" class="btn btn-primary">
+                            <i class="bi bi-check-circle me-1"></i>
+                            {% if faculty %}Сохранить{% else %}Создать{% endif %}
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

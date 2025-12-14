@@ -1,0 +1,167 @@
+{% extends "base.html" %}
+
+{% block title %}{% if group %}Редактировать{% else %}Создать{% endif %} группу{% endblock %}
+
+{% block content %}
+<!-- Header -->
+<div class="row mb-4">
+    <div class="col">
+        <nav aria-label="breadcrumb">
+            <ol class="breadcrumb">
+                <li class="breadcrumb-item">
+                    <a href="{{ url_for('admin.dashboard') }}">Админ-панель</a>
+                </li>
+                <li class="breadcrumb-item">
+                    <a href="{{ url_for('admin.groups') }}">Группы</a>
+                </li>
+                <li class="breadcrumb-item active">
+                    {% if group %}Редактировать{% else %}Создать{% endif %}
+                </li>
+            </ol>
+        </nav>
+        
+        <h2 class="mb-0">
+            <i class="bi bi-people-fill text-primary me-2"></i>
+            {% if group %}Редактировать группу{% else %}Новая группа{% endif %}
+        </h2>
+    </div>
+</div>
+
+<!-- Form Card -->
+<div class="row justify-content-center">
+    <div class="col-lg-10">
+        <div class="card border-0 shadow-sm">
+            <div class="card-body p-3 p-md-4">
+                <form method="POST">
+                    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                    
+                    <div class="row g-3">
+                        <div class="col-md-6">
+                            <label for="name" class="form-label">
+                                <i class="bi bi-pencil me-1"></i>
+                                Название группы <span class="text-danger">*</span>
+                            </label>
+                            <input type="text" 
+                                   class="form-control" 
+                                   id="name" 
+                                   name="name" 
+                                   placeholder="ИС-21"
+                                   value="{{ group.name if group else '' }}"
+                                   required>
+                        </div>
+                        
+                        <div class="col-md-3">
+                            <label for="course" class="form-label">
+                                <i class="bi bi-bookmark me-1"></i>
+                                Курс <span class="text-danger">*</span>
+                            </label>
+                            <select class="form-select" id="course" name="course" required>
+                                <option value="">-- Курс --</option>
+                                {% for c in range(1, 7) %}
+                                <option value="{{ c }}" 
+                                        {% if group and group.course == c %}selected{% endif %}>
+                                    {{ c }} курс
+                                </option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                        
+                        <div class="col-md-3">
+                            <label for="semester" class="form-label">
+                                <i class="bi bi-calendar3 me-1"></i>
+                                Семестр <span class="text-danger">*</span>
+                            </label>
+                            <select class="form-select" id="semester" name="semester" required>
+                                <option value="">-- Семестр --</option>
+                                {% for s in range(1, 13) %}
+                                <option value="{{ s }}" 
+                                        {% if group and group.semester == s %}selected{% endif %}>
+                                    {{ s }} семестр
+                                </option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                    </div>
+                    
+                    <div class="row g-3 mt-2">
+                        <div class="col-md-6">
+                            <label for="specialty_id" class="form-label">
+                                <i class="bi bi-book me-1"></i>
+                                Специальность <span class="text-danger">*</span>
+                            </label>
+                            <select class="form-select" id="specialty_id" name="specialty_id" required>
+                                <option value="">-- Выберите специальность --</option>
+                                {% for specialty in specialties %}
+                                <option value="{{ specialty.id }}" 
+                                        {% if group and group.specialty_id == specialty.id %}selected{% endif %}>
+                                    {{ specialty.code }} - {{ specialty.name }}
+                                </option>
+                                {% endfor %}
+                            </select>
+                            {% if not specialties %}
+                            <div class="alert alert-warning mt-2 mb-0 small">
+                                <i class="bi bi-exclamation-triangle me-1"></i>
+                                Сначала создайте <a href="{{ url_for('admin.create_specialty') }}" class="alert-link">специальность</a>.
+                            </div>
+                            {% endif %}
+                        </div>
+                        
+                        <div class="col-md-6">
+                            <label for="education_form_id" class="form-label">
+                                <i class="bi bi-calendar-week me-1"></i>
+                                Форма обучения <span class="text-danger">*</span>
+                            </label>
+                            <select class="form-select" id="education_form_id" name="education_form_id" required>
+                                <option value="">-- Выберите форму обучения --</option>
+                                {% for form in education_forms %}
+                                <option value="{{ form.id }}" 
+                                        {% if group and group.education_form_id == form.id %}selected{% endif %}>
+                                    {{ form.name }} ({{ form.duration_years }} лет)
+                                </option>
+                                {% endfor %}
+                            </select>
+                            {% if not education_forms %}
+                            <div class="alert alert-warning mt-2 mb-0 small">
+                                <i class="bi bi-exclamation-triangle me-1"></i>
+                                Сначала создайте <a href="{{ url_for('admin.create_education_form') }}" class="alert-link">форму обучения</a>.
+                            </div>
+                            {% endif %}
+                        </div>
+                    </div>
+                    
+                    <div class="row g-3 mt-2">
+                        <div class="col-md-12">
+                            <label for="teacher_id" class="form-label">
+                                <i class="bi bi-person-badge me-1"></i>
+                                Преподаватель (необязательно)
+                            </label>
+                            <select class="form-select" id="teacher_id" name="teacher_id">
+                                <option value="">-- Не назначен --</option>
+                                {% for teacher in teachers %}
+                                <option value="{{ teacher.id }}" 
+                                        {% if group and group.teacher_id == teacher.id %}selected{% endif %}>
+                                    {{ teacher.full_name }}
+                                </option>
+                                {% endfor %}
+                            </select>
+                            <div class="form-text">Преподаватель физической культуры для этой группы</div>
+                        </div>
+                    </div>
+                    
+                    <div class="d-grid gap-2 d-md-flex justify-content-md-between mt-4">
+                        <a href="{{ url_for('admin.groups') }}" class="btn btn-outline-secondary">
+                            <i class="bi bi-arrow-left me-1"></i>
+                            Отмена
+                        </a>
+                        <button type="submit" class="btn btn-primary" 
+                                {% if not specialties or not education_forms %}disabled{% endif %}>
+                            <i class="bi bi-check-circle me-1"></i>
+                            {% if group %}Сохранить{% else %}Создать{% endif %}
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

@@ -1,0 +1,260 @@
+{% extends "base.html" %}
+
+{% block title %}{{ group.name }} - Детали группы{% endblock %}
+
+{% block content %}
+<!-- Header -->
+<div class="row mb-4">
+    <div class="col">
+        <nav aria-label="breadcrumb">
+            <ol class="breadcrumb">
+                <li class="breadcrumb-item">
+                    <a href="{{ url_for('teacher.dashboard') }}">Главная</a>
+                </li>
+                <li class="breadcrumb-item">
+                    <a href="{{ url_for('teacher.groups') }}">Группы</a>
+                </li>
+                <li class="breadcrumb-item active">{{ group.name }}</li>
+            </ol>
+        </nav>
+        
+        <div class="d-flex justify-content-between align-items-center">
+            <div>
+                <h2 class="mb-1">
+                    <i class="bi bi-people-fill text-primary me-2"></i>
+                    {{ group.name }}
+                </h2>
+                <p class="text-muted mb-0">
+                    {{ group.specialty.name if group.specialty else 'Специальность не указана' }}
+                </p>
+            </div>
+            <div>
+                <span class="badge bg-primary fs-5">Курс {{ group.course }}</span>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Group Info Card -->
+<div class="row mb-4">
+    <div class="col-md-12">
+        <div class="card border-0 shadow-sm">
+            <div class="card-body">
+                <div class="row">
+                    <div class="col-md-3">
+                        <p class="text-muted small mb-1">Семестр</p>
+                        <p class="fw-bold mb-0">{{ group.semester }}</p>
+                    </div>
+                    <div class="col-md-3">
+                        <p class="text-muted small mb-1">Форма обучения</p>
+                        <p class="fw-bold mb-0">{{ group.education_form.name if group.education_form else '-' }}</p>
+                    </div>
+                    <div class="col-md-3">
+                        <p class="text-muted small mb-1">Факультет</p>
+                        <p class="fw-bold mb-0">{{ group.specialty.faculty.name if group.specialty and group.specialty.faculty else '-' }}</p>
+                    </div>
+                    <div class="col-md-3">
+                        <p class="text-muted small mb-1">Студентов</p>
+                        <p class="fw-bold mb-0">{{ students_data|length }}</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Quick Actions -->
+<div class="row mb-4">
+    <div class="col">
+        <div class="btn-group" role="group">
+            <a href="{{ url_for('teacher.rating', group_id=group.id) }}" class="btn btn-outline-primary">
+                <i class="bi bi-graph-up me-1"></i>Рейтинг группы
+            </a>
+            <a href="{{ url_for('teacher.attendance_history', group_id=group.id) }}" class="btn btn-outline-info">
+                <i class="bi bi-calendar3 me-1"></i>История посещаемости
+            </a>
+            <a href="{{ url_for('teacher.attendance', group_id=group.id) }}" class="btn btn-outline-success">
+                <i class="bi bi-clipboard-check me-1"></i>Отметить посещаемость
+            </a>
+        </div>
+    </div>
+</div>
+
+<!-- Sorting -->
+<div class="row mb-3">
+    <div class="col-md-6">
+        <h5 class="mb-0">
+            <i class="bi bi-list-ul text-primary me-2"></i>
+            Студенты ({{ students_data|length }})
+        </h5>
+    </div>
+    <div class="col-md-6 text-end">
+        <div class="btn-group btn-group-sm" role="group">
+            <a href="?sort=name" class="btn btn-outline-secondary {{ 'active' if sort_by == 'name' else '' }}">
+                <i class="bi bi-sort-alpha-down me-1"></i>По имени
+            </a>
+            <a href="?sort=rating" class="btn btn-outline-secondary {{ 'active' if sort_by == 'rating' else '' }}">
+                <i class="bi bi-star me-1"></i>По рейтингу
+            </a>
+            <a href="?sort=attendance" class="btn btn-outline-secondary {{ 'active' if sort_by == 'attendance' else '' }}">
+                <i class="bi bi-calendar-check me-1"></i>По посещаемости
+            </a>
+        </div>
+    </div>
+</div>
+
+<!-- Students Table -->
+{% if students_data %}
+<div class="card border-0 shadow-sm">
+    <div class="table-responsive">
+        <table class="table table-hover align-middle mb-0">
+            <thead class="table-light">
+                <tr>
+                    <th style="width: 5%;">#</th>
+                    <th style="width: 35%;">ФИО студента</th>
+                    <th style="width: 15%;">№ студ. билета</th>
+                    <th style="width: 15%;" class="text-center">Посещаемость</th>
+                    <th style="width: 15%;" class="text-center">Рейтинг</th>
+                    <th style="width: 15%;" class="text-center">Действия</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for item in students_data %}
+                <tr>
+                    <td>{{ loop.index }}</td>
+                    <td>
+                        <div class="d-flex align-items-center">
+                            <div class="avatar bg-primary text-white rounded-circle me-2 d-flex align-items-center justify-content-center" 
+                                 style="width: 40px; height: 40px;">
+                                {{ item.student.full_name[0] }}
+                            </div>
+                            <div>
+                                <p class="mb-0 fw-bold">{{ item.student.full_name }}</p>
+                                <p class="text-muted small mb-0">
+                                    {{ item.student.gender|replace('male', 'М')|replace('female', 'Ж') }} | 
+                                    Мед.группа: {{ item.student.medical_group }}
+                                </p>
+                            </div>
+                        </div>
+                    </td>
+                    <td>
+                        <span class="badge bg-secondary">{{ item.student.student_number }}</span>
+                    </td>
+                    <td class="text-center">
+                        <div class="d-flex flex-column align-items-center">
+                            <span class="badge bg-{{ item.attendance_percentage|rating_badge }} mb-1">
+                                {{ item.attendance_percentage|round(1) }}%
+                            </span>
+                            <small class="text-muted">
+                                {% if item.attendance_percentage >= 90 %}
+                                    Отлично
+                                {% elif item.attendance_percentage >= 75 %}
+                                    Хорошо
+                                {% elif item.attendance_percentage >= 60 %}
+                                    Удовл.
+                                {% else %}
+                                    Плохо
+                                {% endif %}
+                            </small>
+                        </div>
+                    </td>
+                    <td class="text-center">
+                        <div class="d-flex flex-column align-items-center">
+                            <span class="badge bg-{{ item.rating.total|rating_badge }} mb-1 fs-6">
+                                {{ item.rating.total|round(1) }}
+                            </span>
+                            <small class="text-muted">
+                                {% if item.rating.passed %}
+                                    <i class="bi bi-check-circle text-success"></i> Зачтено
+                                {% else %}
+                                    <i class="bi bi-x-circle text-danger"></i> Не зачтено
+                                {% endif %}
+                            </small>
+                        </div>
+                    </td>
+                    <td class="text-center">
+                        <div class="btn-group btn-group-sm" role="group">
+                            <a href="{{ url_for('student.profile', student_id=item.student.id) }}" 
+                               class="btn btn-outline-primary"
+                               data-bs-toggle="tooltip"
+                               title="Профиль студента">
+                                <i class="bi bi-eye"></i>
+                            </a>
+                            <a href="{{ url_for('teacher.student_results', student_id=item.student.id) }}" 
+                               class="btn btn-outline-success"
+                               data-bs-toggle="tooltip"
+                               title="Результаты">
+                                <i class="bi bi-clipboard-data"></i>
+                            </a>
+                        </div>
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+
+<!-- Stats Summary -->
+<div class="row mt-4">
+    <div class="col-md-3">
+        <div class="card border-0 shadow-sm text-center">
+            <div class="card-body">
+                <h4 class="text-primary">{{ students_data|length }}</h4>
+                <p class="text-muted small mb-0">Всего студентов</p>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="card border-0 shadow-sm text-center">
+            <div class="card-body">
+                <h4 class="text-success">
+                    {{ students_data|selectattr('rating.passed')|list|length }}
+                </h4>
+                <p class="text-muted small mb-0">Сдали зачет</p>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="card border-0 shadow-sm text-center">
+            <div class="card-body">
+                <h4 class="text-danger">
+                    {{ students_data|rejectattr('rating.passed')|list|length }}
+                </h4>
+                <p class="text-muted small mb-0">Не сдали зачет</p>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="card border-0 shadow-sm text-center">
+            <div class="card-body">
+                <h4 class="text-info">
+                    {% set total_attendance = students_data|sum(attribute='attendance_percentage') %}
+                    {% if students_data|length > 0 %}
+                        {{ (total_attendance / students_data|length)|round(1) }}%
+                    {% else %}
+                        0%
+                    {% endif %}
+                </h4>
+                <p class="text-muted small mb-0">Средняя посещаемость</p>
+            </div>
+        </div>
+    </div>
+</div>
+
+{% else %}
+<div class="alert alert-info">
+    <i class="bi bi-info-circle me-2"></i>
+    В этой группе пока нет студентов.
+</div>
+{% endif %}
+{% endblock %}
+
+{% block extra_css %}
+<style>
+.avatar {
+    font-weight: 600;
+    font-size: 1.1rem;
+}
+</style>
+{% endblock %}

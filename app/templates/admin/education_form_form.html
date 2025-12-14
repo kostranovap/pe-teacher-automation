@@ -1,0 +1,84 @@
+{% extends "base.html" %}
+
+{% block title %}Создать форму обучения{% endblock %}
+
+{% block content %}
+<!-- Header -->
+<div class="row mb-4">
+    <div class="col">
+        <nav aria-label="breadcrumb">
+            <ol class="breadcrumb">
+                <li class="breadcrumb-item">
+                    <a href="{{ url_for('admin.dashboard') }}">Админ-панель</a>
+                </li>
+                <li class="breadcrumb-item">
+                    <a href="{{ url_for('admin.education_forms') }}">Формы обучения</a>
+                </li>
+                <li class="breadcrumb-item active">Создать</li>
+            </ol>
+        </nav>
+        
+        <h2 class="mb-0">
+            <i class="bi bi-calendar3 text-primary me-2"></i>
+            Новая форма обучения
+        </h2>
+    </div>
+</div>
+
+<!-- Form Card -->
+<div class="row justify-content-center">
+    <div class="col-lg-8">
+        <div class="card border-0 shadow-sm">
+            <div class="card-body p-4">
+                <form method="POST">
+                    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                    
+                    <div class="mb-3">
+                        <label for="name" class="form-label">
+                            <i class="bi bi-pencil me-1"></i>
+                            Название формы обучения <span class="text-danger">*</span>
+                        </label>
+                        <input type="text" 
+                               class="form-control" 
+                               id="name" 
+                               name="name" 
+                               placeholder="Очная"
+                               value="{{ form.name if form else '' }}"
+                               required>
+                        <div class="form-text">Например: Очная, Очно-заочная, Заочная</div>
+                    </div>
+                    
+                    <div class="mb-4">
+                        <label for="duration_years" class="form-label">
+                            <i class="bi bi-clock me-1"></i>
+                            Продолжительность (лет) <span class="text-danger">*</span>
+                        </label>
+                        <input type="number" 
+                               class="form-control" 
+                               id="duration_years" 
+                               name="duration_years" 
+                               placeholder="4"
+                               value="{{ form.duration_years if form else '' }}"
+                               min="1"
+                               max="10"
+                               step="0.5"
+                               required>
+                        <div class="form-text">Стандартная продолжительность обучения</div>
+                    </div>
+                    
+                    <div class="d-grid gap-2 d-md-flex justify-content-md-between">
+                        <a href="{{ url_for('admin.education_forms') }}" class="btn btn-outline-secondary">
+                            <i class="bi bi-arrow-left me-1"></i>
+                            Отмена
+                        </a>
+                        <button type="submit" class="btn btn-primary">
+                            <i class="bi bi-check-circle me-1"></i>
+                            Создать
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

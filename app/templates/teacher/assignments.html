@@ -1,0 +1,149 @@
+{% extends "base.html" %}
+
+{% block title %}Индивидуальные задания{% endblock %}
+
+{% block content %}
+<!-- Header -->
+<div class="row mb-4">
+    <div class="col">
+        <nav aria-label="breadcrumb">
+            <ol class="breadcrumb">
+                <li class="breadcrumb-item">
+                    <a href="{{ url_for('teacher.dashboard') }}">Главная</a>
+                </li>
+                <li class="breadcrumb-item active">Задания</li>
+            </ol>
+        </nav>
+        
+        <div class="d-flex justify-content-between align-items-center">
+            <h2 class="mb-0">
+                <i class="bi bi-list-task text-primary me-2"></i>
+                Индивидуальные задания
+            </h2>
+            <a href="{{ url_for('teacher.create_assignment') }}" class="btn btn-primary">
+                <i class="bi bi-plus-circle me-1"></i>
+                Создать задание
+            </a>
+        </div>
+    </div>
+</div>
+
+<!-- Filters -->
+<div class="row mb-4">
+    <div class="col">
+        <div class="card border-0 shadow-sm">
+            <div class="card-body">
+                <form method="GET" action="{{ url_for('teacher.assignments') }}">
+                    <div class="row g-3">
+                        <div class="col-md-5">
+                            <label for="group_id" class="form-label">
+                                <i class="bi bi-people me-1"></i>Группа
+                            </label>
+                            <select class="form-select" id="group_id" name="group_id">
+                                <option value="">Все группы</option>
+                                {% for group in groups %}
+                                <option value="{{ group.id }}" 
+                                        {% if selected_group_id == group.id %}selected{% endif %}>
+                                    {{ group.name }}
+                                </option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                        
+                        <div class="col-md-5">
+                            <label for="status" class="form-label">
+                                <i class="bi bi-funnel me-1"></i>Статус
+                            </label>
+                            <select class="form-select" id="status" name="status">
+                                <option value="">Все статусы</option>
+                                <option value="назначено" {% if selected_status == 'назначено' %}selected{% endif %}>Назначено</option>
+                                <option value="в_работе" {% if selected_status == 'в_работе' %}selected{% endif %}>В работе</option>
+                                <option value="выполнено" {% if selected_status == 'выполнено' %}selected{% endif %}>Выполнено</option>
+                                <option value="проверено" {% if selected_status == 'проверено' %}selected{% endif %}>Проверено</option>
+                            </select>
+                        </div>
+                        
+                        <div class="col-md-2 d-flex align-items-end">
+                            <button type="submit" class="btn btn-primary w-100">
+                                <i class="bi bi-funnel me-1"></i>Фильтр
+                            </button>
+                        </div>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Assignments List -->
+{% if assignments %}
+<div class="row g-3">
+    {% for assignment in assignments %}
+    <div class="col-md-6 col-lg-4">
+        <div class="card border-0 shadow-sm h-100">
+            <div class="card-body">
+                <div class="d-flex justify-content-between align-items-start mb-2">
+                    <h6 class="card-title mb-0">{{ assignment.title }}</h6>
+                    <span class="badge bg-{{ assignment.status|status_badge }}">
+                        {{ assignment.status|replace('_', ' ') }}
+                    </span>
+                </div>
+                
+                <p class="text-muted small mb-2">
+                    <span class="badge bg-secondary">{{ assignment.type|replace('_', ' ') }}</span>
+                </p>
+                
+                <p class="card-text small mb-3">
+                    {{ assignment.description|truncate(100) if assignment.description else 'Без описания' }}
+                </p>
+                
+                <div class="mb-3">
+                    <p class="text-muted small mb-1">
+                        <i class="bi bi-person me-1"></i>
+                        <strong>Студент:</strong> {{ assignment.student.full_name }}
+                    </p>
+                    <p class="text-muted small mb-1">
+                        <i class="bi bi-calendar me-1"></i>
+                        <strong>Срок:</strong> {{ assignment.deadline|format_date }}
+                    </p>
+                    <p class="text-muted small mb-0">
+                        <i class="bi bi-star me-1"></i>
+                        <strong>Бонус:</strong> {{ assignment.bonus_points }} баллов
+                    </p>
+                </div>
+                
+                <div class="d-grid gap-2">
+                    <a href="{{ url_for('teacher.edit_assignment', assignment_id=assignment.id) }}" 
+                       class="btn btn-sm btn-outline-primary">
+                        <i class="bi bi-pencil me-1"></i>Редактировать
+                    </a>
+                    <form method="POST" 
+                          action="{{ url_for('teacher.delete_assignment', assignment_id=assignment.id) }}"
+                          onsubmit="return confirm('Удалить задание?');">
+                        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                        <button type="submit" class="btn btn-sm btn-outline-danger w-100">
+                            <i class="bi bi-trash me-1"></i>Удалить
+                        </button>
+                    </form>
+                </div>
+            </div>
+            
+            <div class="card-footer bg-light text-muted small">
+                Создано: {{ assignment.created_at|format_date }}
+            </div>
+        </div>
+    </div>
+    {% endfor %}
+</div>
+{% else %}
+<div class="alert alert-info">
+    <i class="bi bi-info-circle me-2"></i>
+    {% if selected_group_id or selected_status %}
+    Нет заданий по выбранным фильтрам.
+    {% else %}
+    Вы еще не создали ни одного задания.
+    <a href="{{ url_for('teacher.create_assignment') }}" class="alert-link">Создать первое задание</a>
+    {% endif %}
+</div>
+{% endif %}
+{% endblock %}

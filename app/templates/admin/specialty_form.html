@@ -1,0 +1,105 @@
+{% extends "base.html" %}
+
+{% block title %}{% if specialty %}Редактировать{% else %}Создать{% endif %} специальность{% endblock %}
+
+{% block content %}
+<!-- Header -->
+<div class="row mb-4">
+    <div class="col">
+        <nav aria-label="breadcrumb">
+            <ol class="breadcrumb">
+                <li class="breadcrumb-item">
+                    <a href="{{ url_for('admin.dashboard') }}">Админ-панель</a>
+                </li>
+                <li class="breadcrumb-item">
+                    <a href="{{ url_for('admin.specialties') }}">Специальности</a>
+                </li>
+                <li class="breadcrumb-item active">
+                    {% if specialty %}Редактировать{% else %}Создать{% endif %}
+                </li>
+            </ol>
+        </nav>
+        
+        <h2 class="mb-0">
+            <i class="bi bi-book text-primary me-2"></i>
+            {% if specialty %}Редактировать специальность{% else %}Новая специальность{% endif %}
+        </h2>
+    </div>
+</div>
+
+<!-- Form Card -->
+<div class="row justify-content-center">
+    <div class="col-lg-8">
+        <div class="card border-0 shadow-sm">
+            <div class="card-body p-4">
+                <form method="POST">
+                    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                    
+                    <div class="mb-3">
+                        <label for="code" class="form-label">
+                            <i class="bi bi-hash me-1"></i>
+                            Код специальности <span class="text-danger">*</span>
+                        </label>
+                        <input type="text" 
+                               class="form-control" 
+                               id="code" 
+                               name="code" 
+                               placeholder="09.03.01"
+                               value="{{ specialty.code if specialty else '' }}"
+                               required
+                               maxlength="20">
+                        <div class="form-text">Уникальный код специальности (например, 09.03.01)</div>
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label for="name" class="form-label">
+                            <i class="bi bi-pencil me-1"></i>
+                            Название специальности <span class="text-danger">*</span>
+                        </label>
+                        <input type="text" 
+                               class="form-control" 
+                               id="name" 
+                               name="name" 
+                               placeholder="Информатика и вычислительная техника"
+                               value="{{ specialty.name if specialty else '' }}"
+                               required>
+                    </div>
+                    
+                    <div class="mb-4">
+                        <label for="faculty_id" class="form-label">
+                            <i class="bi bi-building me-1"></i>
+                            Факультет <span class="text-danger">*</span>
+                        </label>
+                        <select class="form-select" id="faculty_id" name="faculty_id" required>
+                            <option value="">-- Выберите факультет --</option>
+                            {% for faculty in faculties %}
+                            <option value="{{ faculty.id }}" 
+                                    {% if specialty and specialty.faculty_id == faculty.id %}selected{% endif %}>
+                                {{ faculty.code }} - {{ faculty.name }}
+                            </option>
+                            {% endfor %}
+                        </select>
+                        {% if not faculties %}
+                        <div class="alert alert-warning mt-2 mb-0">
+                            <i class="bi bi-exclamation-triangle me-2"></i>
+                            Сначала создайте хотя бы один <a href="{{ url_for('admin.create_faculty') }}" class="alert-link">факультет</a>.
+                        </div>
+                        {% endif %}
+                    </div>
+                    
+                    <div class="d-grid gap-2 d-md-flex justify-content-md-between">
+                        <a href="{{ url_for('admin.specialties') }}" class="btn btn-outline-secondary">
+                            <i class="bi bi-arrow-left me-1"></i>
+                            Отмена
+                        </a>
+                        <button type="submit" class="btn btn-primary" {% if not faculties %}disabled{% endif %}>
+                            <i class="bi bi-check-circle me-1"></i>
+                            {% if specialty %}Сохранить{% else %}Создать{% endif %}
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

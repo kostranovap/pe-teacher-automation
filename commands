@@ -1,0 +1,6 @@
+.venv\\Scripts\\activate
+pip install -r requirements.txt
+
+$env:FLASK_APP = "run.py"
+flask init-db
+flask seed-db

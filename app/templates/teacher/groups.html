@@ -1,0 +1,202 @@
+{% extends "base.html" %}
+
+{% block title %}Мои группы{% endblock %}
+
+{% block content %}
+<!-- Header -->
+<div class="row mb-4">
+    <div class="col">
+        <nav aria-label="breadcrumb">
+            <ol class="breadcrumb">
+                <li class="breadcrumb-item">
+                    <a href="{{ url_for('teacher.dashboard') }}">Главная</a>
+                </li>
+                <li class="breadcrumb-item active">Мои группы</li>
+            </ol>
+        </nav>
+        <h2 class="mb-0">
+            <i class="bi bi-people-fill text-primary me-2"></i>
+            Мои группы
+        </h2>
+    </div>
+</div>
+
+<!-- Stats Summary -->
+<div class="row g-3 mb-4">
+    <div class="col-md-3">
+        <div class="card border-0 shadow-sm">
+            <div class="card-body">
+                <div class="d-flex justify-content-between align-items-center">
+                    <div>
+                        <p class="text-muted small mb-1">Всего групп</p>
+                        <h3 class="mb-0">{{ groups_data|length }}</h3>
+                    </div>
+                    <i class="bi bi-people text-primary" style="font-size: 2rem;"></i>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-md-3">
+        <div class="card border-0 shadow-sm">
+            <div class="card-body">
+                <div class="d-flex justify-content-between align-items-center">
+                    <div>
+                        <p class="text-muted small mb-1">Всего студентов</p>
+                        <h3 class="mb-0">{{ groups_data|sum(attribute='students_count') }}</h3>
+                    </div>
+                    <i class="bi bi-mortarboard text-success" style="font-size: 2rem;"></i>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-md-3">
+        <div class="card border-0 shadow-sm">
+            <div class="card-body">
+                <div class="d-flex justify-content-between align-items-center">
+                    <div>
+                        <p class="text-muted small mb-1">Средняя посещаемость</p>
+                        <h3 class="mb-0">
+                            {% set total_attendance = groups_data|sum(attribute='avg_attendance') %}
+                            {% if groups_data|length > 0 %}
+                                {{ (total_attendance / groups_data|length)|round(1) }}%
+                            {% else %}
+                                0%
+                            {% endif %}
+                        </h3>
+                    </div>
+                    <i class="bi bi-graph-up text-info" style="font-size: 2rem;"></i>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-md-3">
+        <div class="card border-0 shadow-sm">
+            <div class="card-body">
+                <div class="d-flex justify-content-between align-items-center">
+                    <div>
+                        <p class="text-muted small mb-1">Средний рейтинг</p>
+                        <h3 class="mb-0">
+                            {% set total_rating = groups_data|sum(attribute='avg_rating') %}
+                            {% if groups_data|length > 0 %}
+                                {{ (total_rating / groups_data|length)|round(1) }}
+                            {% else %}
+                                0
+                            {% endif %}
+                        </h3>
+                    </div>
+                    <i class="bi bi-star text-warning" style="font-size: 2rem;"></i>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Groups Cards -->
+{% if groups_data %}
+<div class="row g-4">
+    {% for item in groups_data %}
+    <div class="col-md-6 col-lg-4">
+        <div class="card border-0 shadow-sm h-100 hover-card">
+            <div class="card-body">
+                <!-- Group Header -->
+                <div class="d-flex justify-content-between align-items-start mb-3">
+                    <div>
+                        <h5 class="card-title mb-1">{{ item.group.name }}</h5>
+                        <p class="text-muted small mb-0">
+                            {{ item.group.specialty.name if item.group.specialty else 'Специальность не указана' }}
+                        </p>
+                    </div>
+                    <span class="badge bg-primary">Курс {{ item.group.course }}</span>
+                </div>
+                
+                <!-- Stats -->
+                <div class="mb-3">
+                    <div class="d-flex justify-content-between text-muted small mb-2">
+                        <span><i class="bi bi-people me-1"></i>Студентов</span>
+                        <strong class="text-dark">{{ item.students_count }}</strong>
+                    </div>
+                    <div class="d-flex justify-content-between text-muted small mb-2">
+                        <span><i class="bi bi-calendar-check me-1"></i>Посещаемость</span>
+                        <strong class="text-dark">{{ item.avg_attendance }}%</strong>
+                    </div>
+                    <div class="d-flex justify-content-between text-muted small mb-2">
+                        <span><i class="bi bi-star me-1"></i>Средний рейтинг</span>
+                        <strong class="text-dark">{{ item.avg_rating }}</strong>
+                    </div>
+                    <div class="d-flex justify-content-between text-muted small">
+                        <span><i class="bi bi-trophy me-1"></i>% Сдачи</span>
+                        <strong class="text-{{ 'success' if item.pass_rate >= 80 else 'warning' if item.pass_rate >= 60 else 'danger' }}">
+                            {{ item.pass_rate }}%
+                        </strong>
+                    </div>
+                </div>
+                
+                <!-- Progress Bar -->
+                <div class="mb-3">
+                    <div class="d-flex justify-content-between small mb-1">
+                        <span class="text-muted">Прогресс</span>
+                        <span class="text-{{ 'success' if item.pass_rate >= 80 else 'warning' if item.pass_rate >= 60 else 'danger' }}">
+                            {{ item.pass_rate }}%
+                        </span>
+                    </div>
+                    <div class="progress" style="height: 8px;">
+                        <div class="progress-bar bg-{{ 'success' if item.pass_rate >= 80 else 'warning' if item.pass_rate >= 60 else 'danger' }}" 
+                             role="progressbar" 
+                             style="width: {{ item.pass_rate }}%">
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Actions -->
+                <div class="d-grid gap-2">
+                    <a href="{{ url_for('teacher.group_details', group_id=item.group.id) }}" 
+                       class="btn btn-primary btn-sm">
+                        <i class="bi bi-eye me-1"></i>Подробнее
+                    </a>
+                    <div class="btn-group" role="group">
+                        <a href="{{ url_for('teacher.rating', group_id=item.group.id) }}" 
+                           class="btn btn-outline-success btn-sm">
+                            <i class="bi bi-graph-up me-1"></i>Рейтинг
+                        </a>
+                        <a href="{{ url_for('teacher.attendance_history', group_id=item.group.id) }}" 
+                           class="btn btn-outline-info btn-sm">
+                            <i class="bi bi-calendar3 me-1"></i>Посещаемость
+                        </a>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Footer -->
+            <div class="card-footer bg-light text-muted small">
+                <i class="bi bi-calendar3 me-1"></i>Семестр: {{ item.group.semester }}
+                <span class="float-end">
+                    <i class="bi bi-book me-1"></i>{{ item.group.education_form.name if item.group.education_form else 'Форма не указана' }}
+                </span>
+            </div>
+        </div>
+    </div>
+    {% endfor %}
+</div>
+{% else %}
+<div class="alert alert-info">
+    <i class="bi bi-info-circle me-2"></i>
+    У вас пока нет закрепленных групп. Обратитесь к администратору для назначения групп.
+</div>
+{% endif %}
+{% endblock %}
+
+{% block extra_css %}
+<style>
+.hover-card {
+    transition: all 0.3s ease;
+}
+
+.hover-card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 8px 20px rgba(0,0,0,0.15) !important;
+}
+</style>
+{% endblock %}

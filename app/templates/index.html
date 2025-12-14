@@ -1,0 +1,203 @@
+{% extends "base.html" %}
+
+{% block title %}Главная{% endblock %}
+
+{% block content %}
+<!-- Hero Section -->
+<div class="row mb-5">
+    <div class="col-lg-8 mx-auto text-center">
+        <h1 class="display-4 mb-3">
+            <i class="bi bi-trophy-fill text-primary me-3"></i>
+            Система автоматизации преподавателя физической культуры
+        </h1>
+        <p class="lead text-muted mb-4">
+            Современная платформа для управления учебным процессом по физической культуре
+        </p>
+        {% if not current_user.is_authenticated %}
+        <div class="d-grid gap-2 d-sm-flex justify-content-sm-center">
+            <a href="{{ url_for('auth.login') }}" class="btn btn-primary btn-lg px-4">
+                <i class="bi bi-box-arrow-in-right me-2"></i>Войти в систему
+            </a>
+            <a href="{{ url_for('student.search') }}" class="btn btn-outline-secondary btn-lg px-4">
+                <i class="bi bi-search me-2"></i>Поиск студента
+            </a>
+        </div>
+        {% endif %}
+    </div>
+</div>
+
+<!-- Features -->
+<div class="row g-4 mb-5">
+    <div class="col-md-6 col-lg-3">
+        <div class="card border-0 shadow-sm h-100 text-center p-4">
+            <div class="card-body">
+                <i class="bi bi-clipboard-check text-primary mb-3" style="font-size: 3rem;"></i>
+                <h5 class="card-title">Посещаемость</h5>
+                <p class="card-text text-muted">
+                    Учет посещаемости занятий с автоматическим расчетом баллов
+                </p>
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-md-6 col-lg-3">
+        <div class="card border-0 shadow-sm h-100 text-center p-4">
+            <div class="card-body">
+                <i class="bi bi-stopwatch text-success mb-3" style="font-size: 3rem;"></i>
+                <h5 class="card-title">Нормативы</h5>
+                <p class="card-text text-muted">
+                    Фиксация результатов и автоматический расчет оценок
+                </p>
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-md-6 col-lg-3">
+        <div class="card border-0 shadow-sm h-100 text-center p-4">
+            <div class="card-body">
+                <i class="bi bi-graph-up text-info mb-3" style="font-size: 3rem;"></i>
+                <h5 class="card-title">Рейтинг</h5>
+                <p class="card-text text-muted">
+                    Балльно-рейтинговая система с детальной статистикой
+                </p>
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-md-6 col-lg-3">
+        <div class="card border-0 shadow-sm h-100 text-center p-4">
+            <div class="card-body">
+                <i class="bi bi-file-earmark-text text-warning mb-3" style="font-size: 3rem;"></i>
+                <h5 class="card-title">Ведомости</h5>
+                <p class="card-text text-muted">
+                    Автоматическое формирование отчетной документации
+                </p>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Info Sections -->
+<div class="row g-4 mb-5">
+    <div class="col-lg-6">
+        <div class="card border-0 shadow-sm h-100">
+            <div class="card-body p-4">
+                <h4 class="mb-3">
+                    <i class="bi bi-people text-primary me-2"></i>
+                    Для студентов
+                </h4>
+                <p class="text-muted">Просмотр своих результатов, посещаемости и рейтинга:</p>
+                <ul class="list-unstyled">
+                    <li class="mb-2">
+                        <i class="bi bi-check-circle text-success me-2"></i>
+                        Личный рейтинг и статистика
+                    </li>
+                    <li class="mb-2">
+                        <i class="bi bi-check-circle text-success me-2"></i>
+                        История посещаемости
+                    </li>
+                    <li class="mb-2">
+                        <i class="bi bi-check-circle text-success me-2"></i>
+                        Результаты нормативов
+                    </li>
+                    <li class="mb-2">
+                        <i class="bi bi-check-circle text-success me-2"></i>
+                        Текущие задания
+                    </li>
+                </ul>
+                <a href="{{ url_for('student.search') }}" class="btn btn-outline-primary">
+                    <i class="bi bi-search me-2"></i>Найти свой профиль
+                </a>
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-lg-6">
+        <div class="card border-0 shadow-sm h-100">
+            <div class="card-body p-4">
+                <h4 class="mb-3">
+                    <i class="bi bi-person-badge text-primary me-2"></i>
+                    Для преподавателей
+                </h4>
+                <p class="text-muted">Полный контроль над учебным процессом:</p>
+                <ul class="list-unstyled">
+                    <li class="mb-2">
+                        <i class="bi bi-check-circle text-success me-2"></i>
+                        Учет посещаемости
+                    </li>
+                    <li class="mb-2">
+                        <i class="bi bi-check-circle text-success me-2"></i>
+                        Внесение результатов нормативов
+                    </li>
+                    <li class="mb-2">
+                        <i class="bi bi-check-circle text-success me-2"></i>
+                        Формирование ведомостей
+                    </li>
+                    <li class="mb-2">
+                        <i class="bi bi-check-circle text-success me-2"></i>
+                        Аналитика по группам
+                    </li>
+                </ul>
+                {% if current_user.is_authenticated %}
+                <a href="{{ url_for('teacher.dashboard') }}" class="btn btn-primary">
+                    <i class="bi bi-speedometer2 me-2"></i>Перейти к панели
+                </a>
+                {% else %}
+                <a href="{{ url_for('auth.login') }}" class="btn btn-outline-primary">
+                    <i class="bi bi-box-arrow-in-right me-2"></i>Войти
+                </a>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Rating System -->
+<div class="row mb-5">
+    <div class="col-lg-10 mx-auto">
+        <div class="card border-0 shadow-sm">
+            <div class="card-body p-4">
+                <h3 class="text-center mb-4">
+                    <i class="bi bi-star-fill text-warning me-2"></i>
+                    Балльно-рейтинговая система
+                </h3>
+                <div class="row text-center g-3">
+                    <div class="col-md-4">
+                        <div class="p-3">
+                            <h2 class="text-primary mb-2">30</h2>
+                            <p class="text-muted mb-0">баллов за посещаемость</p>
+                        </div>
+                    </div>
+                    <div class="col-md-4">
+                        <div class="p-3">
+                            <h2 class="text-success mb-2">35+35</h2>
+                            <p class="text-muted mb-0">баллов за 2 модуля</p>
+                        </div>
+                    </div>
+                    <div class="col-md-4">
+                        <div class="p-3">
+                            <h2 class="text-info mb-2">100</h2>
+                            <p class="text-muted mb-0">максимум баллов</p>
+                        </div>
+                    </div>
+                </div>
+                <div class="text-center mt-3">
+                    <p class="text-muted small mb-0">
+                        Зачет ставится при наборе 60 и более баллов
+                    </p>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- University Info -->
+<div class="row">
+    <div class="col-lg-8 mx-auto text-center">
+        <p class="text-muted">
+            <i class="bi bi-building me-2"></i>
+            {{ university_name }}
+        </p>
+    </div>
+</div>
+{% endblock %}

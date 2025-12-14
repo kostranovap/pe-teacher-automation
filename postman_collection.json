@@ -1,0 +1,394 @@
+{
+  "info": {
+    "name": "Physical Education System API",
+    "description": "API для системы автоматизации деятельности преподавателя физкультуры",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "variable": [
+    {
+      "key": "base_url",
+      "value": "http://localhost:5000",
+      "type": "string"
+    },
+    {
+      "key": "admin_email",
+      "value": "admin@muiv.ru",
+      "type": "string"
+    },
+    {
+      "key": "admin_password",
+      "value": "admin123",
+      "type": "string"
+    },
+    {
+      "key": "teacher_email",
+      "value": "teacher1@muiv.ru",
+      "type": "string"
+    },
+    {
+      "key": "teacher_password",
+      "value": "teacher123",
+      "type": "string"
+    }
+  ],
+  "item": [
+    {
+      "name": "Auth",
+      "item": [
+        {
+          "name": "Login Admin",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"{{admin_email}}\",\n  \"password\": \"{{admin_password}}\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/auth/login",
+              "host": ["{{base_url}}"],
+              "path": ["auth", "login"]
+            }
+          }
+        },
+        {
+          "name": "Login Teacher",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"{{teacher_email}}\",\n  \"password\": \"{{teacher_password}}\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/auth/login",
+              "host": ["{{base_url}}"],
+              "path": ["auth", "login"]
+            }
+          }
+        },
+        {
+          "name": "Get Current User",
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "{{base_url}}/auth/me",
+              "host": ["{{base_url}}"],
+              "path": ["auth", "me"]
+            }
+          }
+        },
+        {
+          "name": "Logout",
+          "request": {
+            "method": "POST",
+            "url": {
+              "raw": "{{base_url}}/auth/logout",
+              "host": ["{{base_url}}"],
+              "path": ["auth", "logout"]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Admin - Users",
+      "item": [
+        {
+          "name": "Get All Users",
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "{{base_url}}/admin/users",
+              "host": ["{{base_url}}"],
+              "path": ["admin", "users"]
+            }
+          }
+        },
+        {
+          "name": "Create Teacher",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"newteacher@muiv.ru\",\n  \"password\": \"teacher123\",\n  \"full_name\": \"Новый Преподаватель\",\n  \"role\": \"teacher\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/admin/users",
+              "host": ["{{base_url}}"],
+              "path": ["admin", "users"]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Admin - Faculties",
+      "item": [
+        {
+          "name": "Get Faculties",
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "{{base_url}}/admin/faculties",
+              "host": ["{{base_url}}"],
+              "path": ["admin", "faculties"]
+            }
+          }
+        },
+        {
+          "name": "Create Faculty",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"code\": \"ФИТ\",\n  \"name\": \"Факультет информационных технологий\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/admin/faculties",
+              "host": ["{{base_url}}"],
+              "path": ["admin", "faculties"]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Teacher - Attendance",
+      "item": [
+        {
+          "name": "Get My Groups",
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "{{base_url}}/teacher/my-groups",
+              "host": ["{{base_url}}"],
+              "path": ["teacher", "my-groups"]
+            }
+          }
+        },
+        {
+          "name": "Mark Attendance",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"student_id\": 1,\n  \"date\": \"2025-11-25\",\n  \"status\": \"присутствовал\",\n  \"comment\": \"\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/teacher/attendance",
+              "host": ["{{base_url}}"],
+              "path": ["teacher", "attendance"]
+            }
+          }
+        },
+        {
+          "name": "Bulk Mark Attendance",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"date\": \"2025-11-25\",\n  \"records\": [\n    {\"student_id\": 1, \"status\": \"присутствовал\"},\n    {\"student_id\": 2, \"status\": \"присутствовал\"},\n    {\"student_id\": 3, \"status\": \"отсутствовал\"}\n  ]\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/teacher/attendance/bulk",
+              "host": ["{{base_url}}"],
+              "path": ["teacher", "attendance", "bulk"]
+            }
+          }
+        },
+        {
+          "name": "Get Group Attendance",
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "{{base_url}}/teacher/attendance/group/1",
+              "host": ["{{base_url}}"],
+              "path": ["teacher", "attendance", "group", "1"]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Teacher - Standards",
+      "item": [
+        {
+          "name": "Get Modules",
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "{{base_url}}/teacher/modules",
+              "host": ["{{base_url}}"],
+              "path": ["teacher", "modules"]
+            }
+          }
+        },
+        {
+          "name": "Add Result",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"student_id\": 1,\n  \"standard_id\": 1,\n  \"result_value\": 14.5,\n  \"date\": \"2025-11-25\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/teacher/results",
+              "host": ["{{base_url}}"],
+              "path": ["teacher", "results"]
+            }
+          }
+        },
+        {
+          "name": "Get Student Results",
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "{{base_url}}/teacher/results/student/1",
+              "host": ["{{base_url}}"],
+              "path": ["teacher", "results", "student", "1"]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Teacher - Rating",
+      "item": [
+        {
+          "name": "Get Group Rating",
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "{{base_url}}/teacher/rating/group/1",
+              "host": ["{{base_url}}"],
+              "path": ["teacher", "rating", "group", "1"]
+            }
+          }
+        },
+        {
+          "name": "Get Student Rating",
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "{{base_url}}/teacher/rating/student/1",
+              "host": ["{{base_url}}"],
+              "path": ["teacher", "rating", "student", "1"]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Student - Public",
+      "item": [
+        {
+          "name": "Search Student",
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "{{base_url}}/student/search?student_number=ГБ123001",
+              "host": ["{{base_url}}"],
+              "path": ["student", "search"],
+              "query": [
+                {
+                  "key": "student_number",
+                  "value": "ГБ123001"
+                }
+              ]
+            }
+          }
+        },
+        {
+          "name": "Get Full Profile",
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "{{base_url}}/student/1/full-profile",
+              "host": ["{{base_url}}"],
+              "path": ["student", "1", "full-profile"]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Department Head",
+      "item": [
+        {
+          "name": "Get Overview Stats",
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "{{base_url}}/department/stats/overview",
+              "host": ["{{base_url}}"],
+              "path": ["department", "stats", "overview"]
+            }
+          }
+        },
+        {
+          "name": "Get Teachers Stats",
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "{{base_url}}/department/stats/teachers",
+              "host": ["{{base_url}}"],
+              "path": ["department", "stats", "teachers"]
+            }
+          }
+        },
+        {
+          "name": "Compare Groups",
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "{{base_url}}/department/compare/groups",
+              "host": ["{{base_url}}"],
+              "path": ["department", "compare", "groups"]
+            }
+          }
+        }
+      ]
+    }
+  ]
+}

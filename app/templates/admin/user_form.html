@@ -1,0 +1,259 @@
+{% extends "base.html" %}
+
+{% block title %}{% if user %}Редактировать{% else %}Создать{% endif %} пользователя{% endblock %}
+
+{% block content %}
+<!-- Header -->
+<div class="row mb-4">
+    <div class="col">
+        <nav aria-label="breadcrumb">
+            <ol class="breadcrumb">
+                <li class="breadcrumb-item">
+                    <a href="{{ url_for('admin.dashboard') }}">Админ-панель</a>
+                </li>
+                <li class="breadcrumb-item">
+                    <a href="{{ url_for('admin.users') }}">Пользователи</a>
+                </li>
+                <li class="breadcrumb-item active">
+                    {% if user %}Редактировать{% else %}Создать{% endif %}
+                </li>
+            </ol>
+        </nav>
+        
+        <h2 class="mb-0">
+            <i class="bi bi-person-{% if user %}gear{% else %}plus{% endif %} text-primary me-2"></i>
+            {% if user %}Редактировать пользователя{% else %}Создать пользователя{% endif %}
+        </h2>
+    </div>
+</div>
+
+<!-- Form Card -->
+<div class="row">
+    <div class="col-lg-8">
+        <div class="card border-0 shadow-sm">
+            <div class="card-body p-4">
+                <form method="POST" id="userForm">
+                    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                    
+                    <!-- Email -->
+                    <div class="mb-3">
+                        <label for="email" class="form-label">
+                            <i class="bi bi-envelope me-1"></i>Email *
+                        </label>
+                        <input type="email" 
+                               class="form-control" 
+                               id="email" 
+                               name="email" 
+                               value="{{ user.email if user else '' }}"
+                               placeholder="example@muiv.ru"
+                               required>
+                        <div class="form-text">Используется для входа в систему</div>
+                    </div>
+                    
+                    <!-- Full Name -->
+                    <div class="mb-3">
+                        <label for="full_name" class="form-label">
+                            <i class="bi bi-person me-1"></i>ФИО *
+                        </label>
+                        <input type="text" 
+                               class="form-control" 
+                               id="full_name" 
+                               name="full_name" 
+                               value="{{ user.full_name if user else '' }}"
+                               placeholder="Иванов Иван Иванович"
+                               required>
+                    </div>
+                    
+                    <!-- Role -->
+                    <div class="mb-3">
+                        <label for="role" class="form-label">
+                            <i class="bi bi-shield-check me-1"></i>Роль *
+                        </label>
+                        <select class="form-select" id="role" name="role" required>
+                            <option value="">-- Выберите роль --</option>
+                            <option value="admin" 
+                                    {% if user and user.role == 'admin' %}selected{% endif %}>
+                                Администратор
+                            </option>
+                            <option value="teacher" 
+                                    {% if user and user.role == 'teacher' %}selected{% endif %}>
+                                Преподаватель
+                            </option>
+                            <option value="department_head" 
+                                    {% if user and user.role == 'department_head' %}selected{% endif %}>
+                                Заведующий кафедрой
+                            </option>
+                        </select>
+                        <div class="form-text">
+                            <strong>Администратор:</strong> полный доступ к системе<br>
+                            <strong>Преподаватель:</strong> работа с группами и студентами<br>
+                            <strong>Заведующий:</strong> просмотр отчетов и аналитики
+                        </div>
+                    </div>
+                    
+                    <!-- Password -->
+                    {% if not user %}
+                    <div class="mb-3">
+                        <label for="password" class="form-label">
+                            <i class="bi bi-key me-1"></i>Пароль *
+                        </label>
+                        <div class="input-group">
+                            <input type="password" 
+                                   class="form-control" 
+                                   id="password" 
+                                   name="password" 
+                                   placeholder="Минимум 6 символов"
+                                   minlength="6"
+                                   required>
+                            <button class="btn btn-outline-secondary" 
+                                    type="button" 
+                                    id="togglePassword">
+                                <i class="bi bi-eye"></i>
+                            </button>
+                        </div>
+                    </div>
+                    {% else %}
+                    <div class="mb-3">
+                        <label for="new_password" class="form-label">
+                            <i class="bi bi-key me-1"></i>Новый пароль
+                        </label>
+                        <div class="input-group">
+                            <input type="password" 
+                                   class="form-control" 
+                                   id="new_password" 
+                                   name="new_password" 
+                                   placeholder="Оставьте пустым, чтобы не менять"
+                                   minlength="6">
+                            <button class="btn btn-outline-secondary" 
+                                    type="button" 
+                                    id="togglePassword">
+                                <i class="bi bi-eye"></i>
+                            </button>
+                        </div>
+                        <div class="form-text">Оставьте пустым, если не хотите менять пароль</div>
+                    </div>
+                    {% endif %}
+                    
+                    <!-- Is Active -->
+                    <div class="mb-4">
+                        <div class="form-check form-switch">
+                            <input class="form-check-input" 
+                                   type="checkbox" 
+                                   id="is_active" 
+                                   name="is_active"
+                                   {% if not user or user.is_active %}checked{% endif %}>
+                            <label class="form-check-label" for="is_active">
+                                <i class="bi bi-check-circle me-1"></i>Активен
+                            </label>
+                        </div>
+                        <div class="form-text">Неактивные пользователи не могут войти в систему</div>
+                    </div>
+                    
+                    <!-- Actions -->
+                    <div class="d-flex gap-2">
+                        <button type="submit" class="btn btn-primary">
+                            <i class="bi bi-save me-1"></i>Сохранить
+                        </button>
+                        <a href="{{ url_for('admin.users') }}" class="btn btn-secondary">
+                            <i class="bi bi-x-lg me-1"></i>Отмена
+                        </a>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Info Card -->
+    <div class="col-lg-4">
+        <div class="card border-0 shadow-sm bg-light">
+            <div class="card-body">
+                <h5 class="card-title">
+                    <i class="bi bi-info-circle text-primary me-2"></i>
+                    Справка
+                </h5>
+                <p class="card-text small">
+                    <strong>Обязательные поля отмечены *</strong>
+                </p>
+                <hr>
+                <p class="card-text small">
+                    <strong>Требования к паролю:</strong><br>
+                    • Минимум 6 символов<br>
+                    • Рекомендуется использовать буквы и цифры
+                </p>
+                <hr>
+                <p class="card-text small mb-0">
+                    <strong>Email:</strong><br>
+                    Должен быть уникальным в системе
+                </p>
+            </div>
+        </div>
+        
+        {% if user %}
+        <div class="card border-0 shadow-sm mt-3">
+            <div class="card-body">
+                <h6 class="card-title">Информация</h6>
+                <p class="card-text small text-muted">
+                    <strong>Создан:</strong><br>
+                    {{ user.created_at|format_datetime }}
+                </p>
+                <p class="card-text small text-muted mb-0">
+                    <strong>ID:</strong> {{ user.id }}
+                </p>
+            </div>
+        </div>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+// Toggle password visibility
+const toggleBtn = document.getElementById('togglePassword');
+if (toggleBtn) {
+    toggleBtn.addEventListener('click', function() {
+        const password = document.getElementById('{% if user %}new_password{% else %}password{% endif %}');
+        const icon = this.querySelector('i');
+        
+        if (password.type === 'password') {
+            password.type = 'text';
+            icon.classList.remove('bi-eye');
+            icon.classList.add('bi-eye-slash');
+        } else {
+            password.type = 'password';
+            icon.classList.remove('bi-eye-slash');
+            icon.classList.add('bi-eye');
+        }
+    });
+}
+
+// Form validation
+document.getElementById('userForm').addEventListener('submit', function(e) {
+    const email = document.getElementById('email').value;
+    const fullName = document.getElementById('full_name').value;
+    const role = document.getElementById('role').value;
+    
+    if (!email || !fullName || !role) {
+        e.preventDefault();
+        alert('Пожалуйста, заполните все обязательные поля');
+        return false;
+    }
+    
+    {% if not user %}
+    const password = document.getElementById('password').value;
+    if (!password || password.length < 6) {
+        e.preventDefault();
+        alert('Пароль должен содержать минимум 6 символов');
+        return false;
+    }
+    {% else %}
+    const newPassword = document.getElementById('new_password').value;
+    if (newPassword && newPassword.length < 6) {
+        e.preventDefault();
+        alert('Новый пароль должен содержать минимум 6 символов');
+        return false;
+    }
+    {% endif %}
+});
+</script>
+{% endblock %}

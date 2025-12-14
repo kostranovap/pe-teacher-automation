@@ -1,0 +1,121 @@
+{% extends "base.html" %}
+
+{% block title %}Факультеты{% endblock %}
+
+{% block content %}
+<!-- Header -->
+<div class="row mb-4">
+    <div class="col">
+        <nav aria-label="breadcrumb">
+            <ol class="breadcrumb">
+                <li class="breadcrumb-item">
+                    <a href="{{ url_for('admin.dashboard') }}">Админ-панель</a>
+                </li>
+                <li class="breadcrumb-item active">Факультеты</li>
+            </ol>
+        </nav>
+        
+        <div class="d-flex justify-content-between align-items-center flex-wrap">
+            <h2 class="mb-2 mb-md-0">
+                <i class="bi bi-building text-primary me-2"></i>
+                Факультеты
+            </h2>
+            <a href="{{ url_for('admin.create_faculty') }}" class="btn btn-primary">
+                <i class="bi bi-plus-circle me-1"></i>
+                <span class="d-none d-sm-inline">Добавить факультет</span>
+                <span class="d-inline d-sm-none">Добавить</span>
+            </a>
+        </div>
+    </div>
+</div>
+
+<!-- Stats -->
+<div class="row g-3 mb-4">
+    <div class="col-sm-6 col-lg-4">
+        <div class="card border-0 shadow-sm">
+            <div class="card-body">
+                <div class="d-flex justify-content-between align-items-center">
+                    <div>
+                        <p class="text-muted small mb-1">Всего факультетов</p>
+                        <h3 class="mb-0">{{ faculties|length }}</h3>
+                    </div>
+                    <i class="bi bi-building text-primary" style="font-size: 2rem;"></i>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Faculties List -->
+{% if faculties %}
+<div class="row g-3">
+    {% for faculty in faculties %}
+    <div class="col-sm-6 col-lg-4">
+        <div class="card border-0 shadow-sm h-100">
+            <div class="card-body">
+                <div class="d-flex justify-content-between align-items-start mb-3">
+                    <div class="flex-grow-1">
+                        <span class="badge bg-primary mb-2">{{ faculty.code }}</span>
+                        <h5 class="card-title mb-0">{{ faculty.name }}</h5>
+                    </div>
+                </div>
+                
+                <div class="mb-3">
+                    <div class="d-flex justify-content-between text-muted small">
+                        <span><i class="bi bi-book me-1"></i>Специальностей</span>
+                        <strong class="text-dark">{{ faculty.specialties.count() }}</strong>
+                    </div>
+                </div>
+                
+                <div class="btn-group w-100" role="group">
+                    <a href="{{ url_for('admin.edit_faculty', faculty_id=faculty.id) }}" 
+                       class="btn btn-outline-primary btn-sm">
+                        <i class="bi bi-pencil me-1"></i>
+                        <span class="d-none d-sm-inline">Редактировать</span>
+                        <span class="d-inline d-sm-none">Ред.</span>
+                    </a>
+                    <button type="button" 
+                            class="btn btn-outline-danger btn-sm"
+                            onclick="confirmDelete('{{ faculty.id }}', '{{ faculty.name }}')"
+                            {% if faculty.specialties.count() > 0 %}disabled{% endif %}>
+                        <i class="bi bi-trash me-1"></i>
+                        <span class="d-none d-sm-inline">Удалить</span>
+                        <span class="d-inline d-sm-none">Удал.</span>
+                    </button>
+                </div>
+                
+                {% if faculty.specialties.count() > 0 %}
+                <div class="alert alert-info mt-2 mb-0 small">
+                    <i class="bi bi-info-circle me-1"></i>
+                    Есть привязанные специальности
+                </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+    {% endfor %}
+</div>
+{% else %}
+<div class="alert alert-info">
+    <i class="bi bi-info-circle me-2"></i>
+    Факультеты еще не добавлены. Начните с создания нового факультета.
+</div>
+{% endif %}
+
+<!-- Delete Form (hidden) -->
+<form id="deleteForm" method="POST" style="display: none;">
+    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+</form>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+function confirmDelete(facultyId, facultyName) {
+    if (confirm(`Вы уверены, что хотите удалить факультет "${facultyName}"?`)) {
+        const form = document.getElementById('deleteForm');
+        form.action = `/admin/faculties/${facultyId}/delete`;
+        form.submit();
+    }
+}
+</script>
+{% endblock %}

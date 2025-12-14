@@ -1,0 +1,166 @@
+{% extends "base.html" %}
+
+{% block title %}Специальности{% endblock %}
+
+{% block content %}
+<!-- Header -->
+<div class="row mb-4">
+    <div class="col">
+        <nav aria-label="breadcrumb">
+            <ol class="breadcrumb">
+                <li class="breadcrumb-item">
+                    <a href="{{ url_for('admin.dashboard') }}">Админ-панель</a>
+                </li>
+                <li class="breadcrumb-item active">Специальности</li>
+            </ol>
+        </nav>
+        
+        <div class="d-flex justify-content-between align-items-center flex-wrap">
+            <h2 class="mb-2 mb-md-0">
+                <i class="bi bi-book text-primary me-2"></i>
+                Специальности
+            </h2>
+            <a href="{{ url_for('admin.create_specialty') }}" class="btn btn-primary">
+                <i class="bi bi-plus-circle me-1"></i>
+                <span class="d-none d-sm-inline">Добавить специальность</span>
+                <span class="d-inline d-sm-none">Добавить</span>
+            </a>
+        </div>
+    </div>
+</div>
+
+<!-- Filter -->
+<div class="card border-0 shadow-sm mb-4">
+    <div class="card-body">
+        <form method="GET">
+            <div class="row g-3">
+                <div class="col-md-8">
+                    <label for="faculty_id" class="form-label small">Факультет</label>
+                    <select class="form-select form-select-sm" id="faculty_id" name="faculty_id">
+                        <option value="">-- Все факультеты --</option>
+                        {% for faculty in faculties %}
+                        <option value="{{ faculty.id }}" 
+                                {% if selected_faculty_id == faculty.id %}selected{% endif %}>
+                            {{ faculty.code }} - {{ faculty.name }}
+                        </option>
+                        {% endfor %}
+                    </select>
+                </div>
+                
+                <div class="col-md-4 d-flex align-items-end gap-2">
+                    <button type="submit" class="btn btn-primary btn-sm flex-grow-1">
+                        <i class="bi bi-funnel me-1"></i>
+                        Фильтровать
+                    </button>
+                    <a href="{{ url_for('admin.specialties') }}" class="btn btn-outline-secondary btn-sm">
+                        <i class="bi bi-x-circle"></i>
+                    </a>
+                </div>
+            </div>
+        </form>
+    </div>
+</div>
+
+<!-- Stats -->
+<div class="row g-3 mb-4">
+    <div class="col-sm-6 col-lg-4">
+        <div class="card border-0 shadow-sm">
+            <div class="card-body">
+                <div class="d-flex justify-content-between align-items-center">
+                    <div>
+                        <p class="text-muted small mb-1">Всего специальностей</p>
+                        <h3 class="mb-0">{{ specialties|length }}</h3>
+                    </div>
+                    <i class="bi bi-book text-primary" style="font-size: 2rem;"></i>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Specialties List -->
+{% if specialties %}
+<div class="row g-3">
+    {% for specialty in specialties %}
+    <div class="col-md-6 col-lg-4">
+        <div class="card border-0 shadow-sm h-100">
+            <div class="card-body">
+                <div class="d-flex justify-content-between align-items-start mb-3">
+                    <div class="flex-grow-1">
+                        <span class="badge bg-primary mb-2">{{ specialty.code }}</span>
+                        <h5 class="card-title mb-1">{{ specialty.name }}</h5>
+                        <p class="text-muted small mb-0">
+                            <i class="bi bi-building me-1"></i>
+                            {% if specialty.faculty %}
+                                {{ specialty.faculty.name }}
+                            {% else %}
+                                Факультет не указан
+                            {% endif %}
+                        </p>
+                    </div>
+                </div>
+                
+                <div class="mb-3">
+                    <div class="d-flex justify-content-between text-muted small">
+                        <span><i class="bi bi-people me-1"></i>Групп</span>
+                        <strong class="text-dark">{{ specialty.groups.count() }}</strong>
+                    </div>
+                </div>
+                
+                <div class="btn-group w-100" role="group">
+                    <a href="{{ url_for('admin.edit_specialty', specialty_id=specialty.id) }}" 
+                       class="btn btn-outline-primary btn-sm">
+                        <i class="bi bi-pencil me-1"></i>
+                        <span class="d-none d-sm-inline">Редактировать</span>
+                        <span class="d-inline d-sm-none">Ред.</span>
+                    </a>
+                    <button type="button" 
+                            class="btn btn-outline-danger btn-sm"
+                            onclick="confirmDelete('{{ specialty.id }}', '{{ specialty.name }}')"
+                            {% if specialty.groups.count() > 0 %}disabled{% endif %}>
+                        <i class="bi bi-trash me-1"></i>
+                        <span class="d-none d-sm-inline">Удалить</span>
+                        <span class="d-inline d-sm-none">Удал.</span>
+                    </button>
+                </div>
+                
+                {% if specialty.groups.count() > 0 %}
+                <div class="alert alert-info mt-2 mb-0 small">
+                    <i class="bi bi-info-circle me-1"></i>
+                    Есть привязанные группы
+                </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+    {% endfor %}
+</div>
+{% else %}
+<div class="alert alert-info">
+    <i class="bi bi-info-circle me-2"></i>
+    Специальности не найдены. 
+    {% if selected_faculty_id %}
+        Попробуйте изменить фильтр или <a href="{{ url_for('admin.specialties') }}" class="alert-link">сбросить фильтры</a>.
+    {% else %}
+        Начните с создания новой специальности.
+    {% endif %}
+</div>
+{% endif %}
+
+<!-- Delete Form (hidden) -->
+<form id="deleteForm" method="POST" style="display: none;">
+    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+</form>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+function confirmDelete(specialtyId, specialtyName) {
+    if (confirm(`Вы уверены, что хотите удалить специальность "${specialtyName}"?`)) {
+        const form = document.getElementById('deleteForm');
+        form.action = `/admin/specialties/${specialtyId}/delete`;
+        form.submit();
+    }
+}
+</script>
+{% endblock %}

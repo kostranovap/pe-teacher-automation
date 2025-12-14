@@ -1,0 +1,314 @@
+{% extends "base.html" %}
+
+{% block title %}Отметка посещаемости{% endblock %}
+
+{% block extra_css %}
+<style>
+    .student-card {
+        transition: all 0.3s ease;
+        cursor: pointer;
+    }
+    
+    .student-card:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+    }
+    
+    .status-btn {
+        padding: 0.5rem 1rem;
+        border-radius: 8px;
+        border: 2px solid transparent;
+        transition: all 0.2s;
+    }
+    
+    .status-btn.active {
+        border-color: #0d6efd;
+        font-weight: bold;
+    }
+    
+    .status-present { background-color: #d1e7dd; color: #0f5132; }
+    .status-present.active { background-color: #198754; color: white; }
+    
+    .status-absent { background-color: #f8d7da; color: #842029; }
+    .status-absent.active { background-color: #dc3545; color: white; }
+    
+    .status-excused { background-color: #fff3cd; color: #664d03; }
+    .status-excused.active { background-color: #ffc107; color: #000; }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="row mb-4">
+    <div class="col">
+        <h2 class="mb-0">
+            <i class="bi bi-clipboard-check text-primary me-2"></i>
+            Отметка посещаемости
+        </h2>
+    </div>
+</div>
+
+<!-- Выбор группы и даты -->
+<div class="card shadow-sm mb-4">
+    <div class="card-body">
+        <div class="row g-3 align-items-end">
+            <div class="col-md-4">
+                <label for="groupSelect" class="form-label fw-bold">
+                    <i class="bi bi-people me-1"></i>Группа
+                </label>
+                <select class="form-select form-select-lg" id="groupSelect">
+                    <option value="">Выберите группу...</option>
+                    {% for group in groups %}
+                        <option value="{{ group.id }}" {% if loop.first %}selected{% endif %}>
+                            {{ group.name }} ({{ group.students_count }} студентов)
+                        </option>
+                    {% endfor %}
+                </select>
+            </div>
+            
+            <div class="col-md-3">
+                <label for="dateInput" class="form-label fw-bold">
+                    <i class="bi bi-calendar me-1"></i>Дата занятия
+                </label>
+                <input type="date" 
+                       class="form-control form-control-lg" 
+                       id="dateInput" 
+                       value="{{ today }}">
+            </div>
+            
+            <div class="col-md-3">
+                <button class="btn btn-primary btn-lg w-100" id="loadAttendance">
+                    <i class="bi bi-arrow-clockwise me-2"></i>Загрузить
+                </button>
+            </div>
+            
+            <div class="col-md-2">
+                <button class="btn btn-success btn-lg w-100" id="markAllPresent">
+                    <i class="bi bi-check-all me-2"></i>Все здесь
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Список студентов -->
+<div class="row g-3" id="studentsList">
+    <!-- Загрузка... -->
+    <div class="col-12 text-center py-5">
+        <div class="spinner-border text-primary" role="status">
+            <span class="visually-hidden">Загрузка...</span>
+        </div>
+        <p class="mt-3 text-muted">Загрузка списка студентов...</p>
+    </div>
+</div>
+
+<!-- Кнопка сохранения -->
+<div class="sticky-bottom bg-white border-top py-3 mt-4" id="saveSection" style="display: none;">
+    <div class="container">
+        <div class="row">
+            <div class="col-md-8 mx-auto">
+                <div class="d-flex gap-2">
+                    <button class="btn btn-success btn-lg flex-grow-1" id="saveAttendance">
+                        <i class="bi bi-floppy me-2"></i>
+                        Сохранить посещаемость
+                    </button>
+                    <button class="btn btn-outline-secondary btn-lg" id="cancelChanges">
+                        <i class="bi bi-x-circle me-2"></i>Отмена
+                    </button>
+                </div>
+                <div class="progress mt-2" id="saveProgress" style="display: none; height: 5px;">
+                    <div class="progress-bar progress-bar-striped progress-bar-animated" 
+                         style="width: 100%"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    let currentGroup = null;
+    let currentDate = null;
+    let attendanceData = [];
+    let hasChanges = false;
+
+    // Загрузить посещаемость
+    document.getElementById('loadAttendance').addEventListener('click', loadAttendance);
+    
+    // Отметить всех присутствующими
+    document.getElementById('markAllPresent').addEventListener('click', markAllPresent);
+    
+    // Сохранить
+    document.getElementById('saveAttendance').addEventListener('click', saveAttendance);
+    
+    // Отмена
+    document.getElementById('cancelChanges').addEventListener('click', function() {
+        if (confirm('Отменить изменения?')) {
+            loadAttendance();
+        }
+    });
+
+    async function loadAttendance() {
+        const groupId = document.getElementById('groupSelect').value;
+        const date = document.getElementById('dateInput').value;
+        
+        if (!groupId || !date) {
+            alert('Выберите группу и дату');
+            return;
+        }
+        
+        currentGroup = groupId;
+        currentDate = date;
+        
+        try {
+            const response = await fetch(`/teacher/attendance/date/${date}?group_id=${groupId}`);
+            const data = await response.json();
+            
+            renderStudentsList(data.records);
+            hasChanges = false;
+            document.getElementById('saveSection').style.display = 'none';
+        } catch (error) {
+            console.error('Ошибка загрузки:', error);
+            alert('Ошибка при загрузке данных');
+        }
+    }
+
+    function renderStudentsList(records) {
+        const container = document.getElementById('studentsList');
+        container.innerHTML = '';
+        
+        attendanceData = records;
+        
+        records.forEach((record, index) => {
+            const student = record.student;
+            const attendance = record.attendance;
+            const status = attendance ? attendance.status : 'присутствовал';
+            
+            const col = document.createElement('div');
+            col.className = 'col-md-6 col-lg-4';
+            
+            col.innerHTML = `
+                <div class="card student-card h-100">
+                    <div class="card-body">
+                        <div class="d-flex align-items-start mb-3">
+                            <div class="flex-grow-1">
+                                <h5 class="card-title mb-1">${student.full_name}</h5>
+                                <p class="card-text text-muted small mb-0">
+                                    <i class="bi bi-person-badge me-1"></i>${student.student_number}
+                                </p>
+                                ${student.medical_group !== 'основная' ? 
+                                    `<span class="badge bg-warning text-dark mt-1">
+                                        <i class="bi bi-exclamation-triangle me-1"></i>
+                                        ${student.medical_group}
+                                    </span>` : ''}
+                            </div>
+                        </div>
+                        
+                        <div class="btn-group w-100" role="group">
+                            <button type="button" 
+                                    class="status-btn status-present ${status === 'присутствовал' ? 'active' : ''}"
+                                    onclick="setStatus(${index}, 'присутствовал')">
+                                <i class="bi bi-check-circle me-1"></i>Был
+                            </button>
+                            <button type="button" 
+                                    class="status-btn status-absent ${status === 'отсутствовал' ? 'active' : ''}"
+                                    onclick="setStatus(${index}, 'отсутствовал')">
+                                <i class="bi bi-x-circle me-1"></i>Н/б
+                            </button>
+                            <button type="button" 
+                                    class="status-btn status-excused ${status === 'уважительная' ? 'active' : ''}"
+                                    onclick="setStatus(${index}, 'уважительная')">
+                                <i class="bi bi-file-text me-1"></i>Ув
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            `;
+            
+            container.appendChild(col);
+        });
+    }
+
+    window.setStatus = function(index, status) {
+        attendanceData[index].status = status;
+        hasChanges = true;
+        
+        // Обновить UI
+        const buttons = document.querySelectorAll(`#studentsList > div:nth-child(${index + 1}) .status-btn`);
+        buttons.forEach(btn => btn.classList.remove('active'));
+        
+        const statusMap = {
+            'присутствовал': 0,
+            'отсутствовал': 1,
+            'уважительная': 2
+        };
+        buttons[statusMap[status]].classList.add('active');
+        
+        // Показать кнопку сохранения
+        document.getElementById('saveSection').style.display = 'block';
+    };
+
+    function markAllPresent() {
+        if (!attendanceData.length) return;
+        
+        attendanceData.forEach((record, index) => {
+            setStatus(index, 'присутствовал');
+        });
+    }
+
+    async function saveAttendance() {
+        if (!hasChanges) {
+            alert('Нет изменений для сохранения');
+            return;
+        }
+        
+        const saveBtn = document.getElementById('saveAttendance');
+        const progress = document.getElementById('saveProgress');
+        
+        saveBtn.disabled = true;
+        progress.style.display = 'block';
+        
+        const records = attendanceData.map(record => ({
+            student_id: record.student.id,
+            status: record.status || 'присутствовал'
+        }));
+        
+        try {
+            const response = await fetch('/teacher/attendance/bulk', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({
+                    date: currentDate,
+                    records: records
+                })
+            });
+            
+            const result = await response.json();
+            
+            if (response.ok) {
+                alert(`✅ Сохранено!\nСоздано: ${result.created}\nОбновлено: ${result.updated}`);
+                hasChanges = false;
+                document.getElementById('saveSection').style.display = 'none';
+            } else {
+                alert('Ошибка: ' + (result.error || 'Неизвестная ошибка'));
+            }
+        } catch (error) {
+            console.error('Ошибка сохранения:', error);
+            alert('Ошибка при сохранении данных');
+        } finally {
+            saveBtn.disabled = false;
+            progress.style.display = 'none';
+        }
+    }
+
+    // Автозагрузка при первом открытии
+    window.addEventListener('load', function() {
+        const groupSelect = document.getElementById('groupSelect');
+        if (groupSelect.value) {
+            loadAttendance();
+        }
+    });
+</script>
+{% endblock %}

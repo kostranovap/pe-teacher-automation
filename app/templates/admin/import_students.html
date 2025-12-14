@@ -1,0 +1,206 @@
+{% extends "base.html" %}
+
+{% block title %}Импорт студентов{% endblock %}
+
+{% block content %}
+<!-- Header -->
+<div class="row mb-4">
+    <div class="col">
+        <nav aria-label="breadcrumb">
+            <ol class="breadcrumb">
+                <li class="breadcrumb-item">
+                    <a href="{{ url_for('admin.dashboard') }}">Админ-панель</a>
+                </li>
+                <li class="breadcrumb-item active">Импорт студентов</li>
+            </ol>
+        </nav>
+        
+        <h2 class="mb-0">
+            <i class="bi bi-file-earmark-arrow-up text-primary me-2"></i>
+            Импорт студентов из Excel
+        </h2>
+    </div>
+</div>
+
+<!-- Instructions -->
+<div class="row mb-4">
+    <div class="col-lg-8">
+        <div class="alert alert-info">
+            <h5 class="alert-heading">
+                <i class="bi bi-info-circle me-2"></i>
+                Инструкция по импорту
+            </h5>
+            <p class="mb-2">Подготовьте Excel файл (.xlsx или .xls) со следующими столбцами:</p>
+            <ol class="mb-0">
+                <li><strong>ФИО</strong> - полное имя студента</li>
+                <li><strong>Номер студ. билета</strong> - уникальный номер</li>
+                <li><strong>Группа</strong> - название существующей группы</li>
+                <li><strong>Пол</strong> - М/Ж или male/female</li>
+                <li><strong>Дата рождения</strong> - в формате даты (необязательно)</li>
+                <li><strong>Мед. группа</strong> - основная/подготовительная/СМГ/освобождение (необязательно)</li>
+            </ol>
+        </div>
+    </div>
+</div>
+
+<!-- Upload Form -->
+<div class="row">
+    <div class="col-lg-8">
+        <div class="card border-0 shadow-sm">
+            <div class="card-header bg-white border-0 py-3">
+                <h5 class="mb-0">
+                    <i class="bi bi-upload me-2"></i>
+                    Загрузка файла
+                </h5>
+            </div>
+            <div class="card-body p-4">
+                <form method="POST" enctype="multipart/form-data" id="uploadForm">
+                    <div class="mb-4">
+                        <label for="file" class="form-label">
+                            <i class="bi bi-file-earmark-excel me-1"></i>
+                            Файл Excel <span class="text-danger">*</span>
+                        </label>
+                        <input type="file" 
+                               class="form-control" 
+                               id="file" 
+                               name="file" 
+                               accept=".xlsx,.xls"
+                               required>
+                        <div class="form-text">
+                            Форматы: .xlsx, .xls | Макс. размер: 10 МБ
+                        </div>
+                    </div>
+                    
+                    <div class="alert alert-warning">
+                        <i class="bi bi-exclamation-triangle me-2"></i>
+                        <strong>Внимание!</strong> Перед импортом убедитесь, что все группы уже созданы в системе.
+                    </div>
+                    
+                    <div class="d-grid gap-2 d-md-flex justify-content-md-between">
+                        <a href="{{ url_for('admin.dashboard') }}" class="btn btn-outline-secondary">
+                            <i class="bi bi-arrow-left me-1"></i>
+                            Назад
+                        </a>
+                        <button type="submit" class="btn btn-primary" id="submitBtn">
+                            <i class="bi bi-cloud-upload me-1"></i>
+                            Загрузить и импортировать
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Available Groups -->
+    <div class="col-lg-4 mt-4 mt-lg-0">
+        <div class="card border-0 shadow-sm">
+            <div class="card-header bg-white border-0 py-3">
+                <h6 class="mb-0">
+                    <i class="bi bi-list-ul me-2"></i>
+                    Доступные группы
+                </h6>
+            </div>
+            <div class="card-body p-0">
+                {% if groups %}
+                <div class="list-group list-group-flush" style="max-height: 400px; overflow-y: auto;">
+                    {% for group in groups %}
+                    <div class="list-group-item">
+                        <div class="d-flex justify-content-between align-items-center">
+                            <div>
+                                <p class="mb-0 fw-bold">{{ group.name }}</p>
+                                <small class="text-muted">
+                                    Курс {{ group.course }} | {{ group.students.count() }} студентов
+                                </small>
+                            </div>
+                        </div>
+                    </div>
+                    {% endfor %}
+                </div>
+                {% else %}
+                <div class="alert alert-warning m-3">
+                    <i class="bi bi-exclamation-triangle me-2"></i>
+                    Группы не созданы. Сначала создайте группы.
+                </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Example Template -->
+<div class="row mt-4">
+    <div class="col-lg-8">
+        <div class="card border-0 shadow-sm">
+            <div class="card-header bg-white border-0 py-3">
+                <h6 class="mb-0">
+                    <i class="bi bi-table me-2"></i>
+                    Пример структуры файла
+                </h6>
+            </div>
+            <div class="card-body p-0">
+                <div class="table-responsive">
+                    <table class="table table-sm table-bordered mb-0">
+                        <thead class="table-light">
+                            <tr>
+                                <th>ФИО</th>
+                                <th>Номер студ. билета</th>
+                                <th>Группа</th>
+                                <th>Пол</th>
+                                <th>Дата рождения</th>
+                                <th>Мед. группа</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td>Иванов Иван Иванович</td>
+                                <td>ГБ121001</td>
+                                <td>ИС-21</td>
+                                <td>М</td>
+                                <td>15.03.2002</td>
+                                <td>основная</td>
+                            </tr>
+                            <tr>
+                                <td>Петрова Анна Сергеевна</td>
+                                <td>ГБ121002</td>
+                                <td>ИС-21</td>
+                                <td>Ж</td>
+                                <td>22.07.2002</td>
+                                <td>основная</td>
+                            </tr>
+                            <tr>
+                                <td>Сидоров Петр Алексеевич</td>
+                                <td>ГБ121003</td>
+                                <td>ИС-21</td>
+                                <td>М</td>
+                                <td></td>
+                                <td>подготовительная</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+document.getElementById('uploadForm').addEventListener('submit', function() {
+    const btn = document.getElementById('submitBtn');
+    btn.disabled = true;
+    btn.innerHTML = '<span class="spinner-border spinner-border-sm me-2"></span>Импорт...';
+    
+    showLoading();
+});
+
+// Показать имя выбранного файла
+document.getElementById('file').addEventListener('change', function(e) {
+    const fileName = e.target.files[0]?.name;
+    if (fileName) {
+        const label = document.querySelector('label[for="file"]');
+        label.innerHTML = `<i class="bi bi-file-earmark-excel-fill text-success me-1"></i>${fileName}`;
+    }
+});
+</script>
+{% endblock %}

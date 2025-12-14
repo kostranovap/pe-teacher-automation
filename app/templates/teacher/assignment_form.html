@@ -1,0 +1,206 @@
+{% extends "base.html" %}
+
+{% block title %}{{ 'Редактировать задание' if assignment else 'Создать задание' }}{% endblock %}
+
+{% block content %}
+<!-- Header -->
+<div class="row mb-4">
+    <div class="col">
+        <nav aria-label="breadcrumb">
+            <ol class="breadcrumb">
+                <li class="breadcrumb-item">
+                    <a href="{{ url_for('teacher.dashboard') }}">Главная</a>
+                </li>
+                <li class="breadcrumb-item">
+                    <a href="{{ url_for('teacher.assignments') }}">Задания</a>
+                </li>
+                <li class="breadcrumb-item active">
+                    {{ 'Редактировать' if assignment else 'Создать' }}
+                </li>
+            </ol>
+        </nav>
+        
+        <h2 class="mb-0">
+            <i class="bi bi-{{ 'pencil' if assignment else 'plus-circle' }} text-primary me-2"></i>
+            {{ 'Редактировать задание' if assignment else 'Создать задание' }}
+        </h2>
+    </div>
+</div>
+
+<!-- Form -->
+<div class="row">
+    <div class="col-lg-8 mx-auto">
+        <div class="card border-0 shadow-sm">
+            <div class="card-body p-4">
+                <form method="POST" action="{{ url_for('teacher.edit_assignment', assignment_id=assignment.id) if assignment else url_for('teacher.create_assignment') }}">
+                    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                    
+                    <!-- Student Selection (only for create) -->
+                    {% if not assignment %}
+                    <div class="mb-3">
+                        <label for="group_id" class="form-label">
+                            Группа <span class="text-danger">*</span>
+                        </label>
+                        <select class="form-select" id="group_id" required>
+                            <option value="">-- Выберите группу --</option>
+                            {% for group in groups %}
+                            <option value="{{ group.id }}">
+                                {{ group.name }} (Курс {{ group.course }})
+                            </option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label for="student_id" class="form-label">
+                            Студент <span class="text-danger">*</span>
+                        </label>
+                        <select class="form-select" id="student_id" name="student_id" required disabled>
+                            <option value="">-- Сначала выберите группу --</option>
+                        </select>
+                    </div>
+                    {% else %}
+                    <div class="mb-3">
+                        <label class="form-label fw-bold">Студент</label>
+                        <p class="text-muted">{{ assignment.student.full_name }} ({{ assignment.student.group.name }})</p>
+                    </div>
+                    {% endif %}
+                    
+                    <!-- Type -->
+                    {% if not assignment %}
+                    <div class="mb-3">
+                        <label for="type" class="form-label">
+                            Тип задания <span class="text-danger">*</span>
+                        </label>
+                        <select class="form-select" id="type" name="type" required>
+                            <option value="реферат">Реферат</option>
+                            <option value="презентация">Презентация</option>
+                            <option value="практическое">Практическое задание</option>
+                            <option value="проект">Проект</option>
+                            <option value="другое">Другое</option>
+                        </select>
+                    </div>
+                    {% endif %}
+                    
+                    <!-- Title -->
+                    <div class="mb-3">
+                        <label for="title" class="form-label">
+                            Название задания <span class="text-danger">*</span>
+                        </label>
+                        <input type="text" 
+                               class="form-control" 
+                               id="title" 
+                               name="title" 
+                               value="{{ assignment.title if assignment else '' }}" 
+                               placeholder="Например: Реферат на тему 'Здоровый образ жизни'"
+                               required>
+                    </div>
+                    
+                    <!-- Description -->
+                    <div class="mb-3">
+                        <label for="description" class="form-label">
+                            Описание
+                        </label>
+                        <textarea class="form-control" 
+                                  id="description" 
+                                  name="description" 
+                                  rows="4"
+                                  placeholder="Подробное описание задания, требования, критерии оценки...">{{ assignment.description if assignment else '' }}</textarea>
+                    </div>
+                    
+                    <!-- Deadline -->
+                    <div class="mb-3">
+                        <label for="deadline" class="form-label">
+                            Срок сдачи <span class="text-danger">*</span>
+                        </label>
+                        <input type="date" 
+                               class="form-control" 
+                               id="deadline" 
+                               name="deadline" 
+                               value="{{ assignment.deadline.isoformat() if assignment else '' }}" 
+                               required>
+                    </div>
+                    
+                    <!-- Bonus Points -->
+                    <div class="mb-3">
+                        <label for="bonus_points" class="form-label">
+                            Бонусные баллы
+                        </label>
+                        <input type="number" 
+                               class="form-control" 
+                               id="bonus_points" 
+                               name="bonus_points" 
+                               value="{{ assignment.bonus_points if assignment else 5 }}" 
+                               min="0" 
+                               max="20">
+                        <small class="text-muted">Баллы, которые студент получит за выполнение задания</small>
+                    </div>
+                    
+                    <!-- Status (only for edit) -->
+                    {% if assignment %}
+                    <div class="mb-3">
+                        <label for="status" class="form-label">
+                            Статус
+                        </label>
+                        <select class="form-select" id="status" name="status">
+                            <option value="назначено" {% if assignment.status == 'назначено' %}selected{% endif %}>Назначено</option>
+                            <option value="в_работе" {% if assignment.status == 'в_работе' %}selected{% endif %}>В работе</option>
+                            <option value="выполнено" {% if assignment.status == 'выполнено' %}selected{% endif %}>Выполнено</option>
+                            <option value="проверено" {% if assignment.status == 'проверено' %}selected{% endif %}>Проверено</option>
+                        </select>
+                    </div>
+                    {% endif %}
+                    
+                    <!-- Divider -->
+                    <hr class="my-4">
+                    
+                    <!-- Buttons -->
+                    <div class="d-flex justify-content-between">
+                        <a href="{{ url_for('teacher.assignments') }}" class="btn btn-secondary">
+                            <i class="bi bi-arrow-left me-1"></i>
+                            Отмена
+                        </a>
+                        
+                        <button type="submit" class="btn btn-primary">
+                            <i class="bi bi-{{ 'check-circle' if assignment else 'plus-circle' }} me-1"></i>
+                            {{ 'Сохранить' if assignment else 'Создать' }}
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+{% if not assignment %}
+<script>
+// Load students when group is selected
+document.getElementById('group_id').addEventListener('change', async function() {
+    const groupId = this.value;
+    const studentSelect = document.getElementById('student_id');
+    
+    studentSelect.innerHTML = '<option value="">Загрузка...</option>';
+    studentSelect.disabled = true;
+    
+    if (!groupId) {
+        studentSelect.innerHTML = '<option value="">-- Сначала выберите группу --</option>';
+        return;
+    }
+    
+    try {
+        // Fetch students via API or use existing data
+        // For now, we'll use a simple approach
+        studentSelect.disabled = false;
+        studentSelect.innerHTML = '<option value="">-- Выберите студента --</option>';
+        
+        showToast('Выберите студента из списка', 'info');
+    } catch (error) {
+        console.error('Error loading students:', error);
+        studentSelect.innerHTML = '<option value="">Ошибка загрузки</option>';
+    }
+});
+</script>
+{% endif %}
+{% endblock %}

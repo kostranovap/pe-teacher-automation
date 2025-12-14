@@ -1,0 +1,212 @@
+{% extends "base.html" %}
+
+{% block title %}Рейтинг - {{ group.name }}{% endblock %}
+
+{% block content %}
+<!-- Header -->
+<div class="row mb-4">
+    <div class="col">
+        <nav aria-label="breadcrumb">
+            <ol class="breadcrumb">
+                <li class="breadcrumb-item">
+                    <a href="{{ url_for('teacher.dashboard') }}">Главная</a>
+                </li>
+                <li class="breadcrumb-item">
+                    <a href="{{ url_for('teacher.groups') }}">Группы</a>
+                </li>
+                <li class="breadcrumb-item">
+                    <a href="{{ url_for('teacher.group_details', group_id=group.id) }}">{{ group.name }}</a>
+                </li>
+                <li class="breadcrumb-item active">Рейтинг</li>
+            </ol>
+        </nav>
+        
+        <h2 class="mb-0">
+            <i class="bi bi-graph-up text-primary me-2"></i>
+            Рейтинг группы {{ group.name }}
+        </h2>
+    </div>
+</div>
+
+<!-- Sorting -->
+<div class="row mb-3">
+    <div class="col-md-6">
+        <h5 class="mb-0">
+            <i class="bi bi-trophy text-warning me-2"></i>
+            Студенты ({{ ratings|length }})
+        </h5>
+    </div>
+    <div class="col-md-6 text-end">
+        <div class="btn-group btn-group-sm" role="group">
+            <a href="?sort=total" class="btn btn-outline-secondary {{ 'active' if sort_by == 'total' else '' }}">
+                <i class="bi bi-star me-1"></i>По общему
+            </a>
+            <a href="?sort=attendance" class="btn btn-outline-secondary {{ 'active' if sort_by == 'attendance' else '' }}">
+                <i class="bi bi-calendar-check me-1"></i>По посещаемости
+            </a>
+            <a href="?sort=module1" class="btn btn-outline-secondary {{ 'active' if sort_by == 'module1' else '' }}">
+                <i class="bi bi-1-circle me-1"></i>Модуль 1
+            </a>
+            <a href="?sort=module2" class="btn btn-outline-secondary {{ 'active' if sort_by == 'module2' else '' }}">
+                <i class="bi bi-2-circle me-1"></i>Модуль 2
+            </a>
+            <a href="?sort=name" class="btn btn-outline-secondary {{ 'active' if sort_by == 'name' else '' }}">
+                <i class="bi bi-sort-alpha-down me-1"></i>По имени
+            </a>
+        </div>
+    </div>
+</div>
+
+<!-- Rating Table -->
+{% if ratings %}
+<div class="card border-0 shadow-sm">
+    <div class="table-responsive">
+        <table class="table table-hover align-middle mb-0">
+            <thead class="table-light">
+                <tr>
+                    <th style="width: 5%;" class="text-center">Место</th>
+                    <th style="width: 30%;">ФИО студента</th>
+                    <th style="width: 13%;" class="text-center">Посещаемость</th>
+                    <th style="width: 13%;" class="text-center">Модуль 1</th>
+                    <th style="width: 13%;" class="text-center">Модуль 2</th>
+                    <th style="width: 13%;" class="text-center">Общий рейтинг</th>
+                    <th style="width: 13%;" class="text-center">Статус</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for item in ratings %}
+                <tr class="{{ 'table-success' if item.rating.passed else 'table-danger' if loop.index > ratings|length * 0.8 else '' }}">
+                    <td class="text-center">
+                        {% if loop.index <= 3 %}
+                        <span class="badge bg-{{ 'warning' if loop.index == 1 else 'secondary' }} fs-6">
+                            {{ loop.index }}
+                        </span>
+                        {% else %}
+                        <span class="text-muted">{{ loop.index }}</span>
+                        {% endif %}
+                    </td>
+                    <td>
+                        <div class="d-flex align-items-center">
+                            <div class="avatar bg-primary text-white rounded-circle me-2 d-flex align-items-center justify-content-center" 
+                                 style="width: 40px; height: 40px;">
+                                {{ item.student.full_name[0] }}
+                            </div>
+                            <div>
+                                <p class="mb-0 fw-bold">{{ item.student.full_name }}</p>
+                                <p class="text-muted small mb-0">{{ item.student.student_number }}</p>
+                            </div>
+                        </div>
+                    </td>
+                    <td class="text-center">
+                        <div class="d-flex flex-column align-items-center">
+                            <span class="badge bg-{{ item.rating.attendance|rating_badge }} mb-1">
+                                {{ item.rating.attendance|round(1) }}
+                            </span>
+                            <small class="text-muted">из {{ item.rating.max_attendance }}</small>
+                        </div>
+                    </td>
+                    <td class="text-center">
+                        <div class="d-flex flex-column align-items-center">
+                            <span class="badge bg-{{ item.rating.module1|rating_badge }} mb-1">
+                                {{ item.rating.module1|round(1) }}
+                            </span>
+                            <small class="text-muted">из {{ item.rating.max_module1 }}</small>
+                        </div>
+                    </td>
+                    <td class="text-center">
+                        <div class="d-flex flex-column align-items-center">
+                            <span class="badge bg-{{ item.rating.module2|rating_badge }} mb-1">
+                                {{ item.rating.module2|round(1) }}
+                            </span>
+                            <small class="text-muted">из {{ item.rating.max_module2 }}</small>
+                        </div>
+                    </td>
+                    <td class="text-center">
+                        <div class="d-flex flex-column align-items-center">
+                            <span class="badge bg-{{ item.rating.total|rating_badge }} fs-5 mb-1">
+                                {{ item.rating.total|round(1) }}
+                            </span>
+                            <small class="text-muted">из 100</small>
+                            <div class="progress mt-1" style="width: 80px; height: 5px;">
+                                <div class="progress-bar bg-{{ item.rating.total|rating_badge }}" 
+                                     style="width: {{ item.rating.total }}%">
+                                </div>
+                            </div>
+                        </div>
+                    </td>
+                    <td class="text-center">
+                        {% if item.rating.passed %}
+                        <span class="badge bg-success">
+                            <i class="bi bi-check-circle me-1"></i>Зачтено
+                        </span>
+                        {% else %}
+                        <span class="badge bg-danger">
+                            <i class="bi bi-x-circle me-1"></i>Не зачтено
+                        </span>
+                        {% endif %}
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+    
+    <!-- Summary Footer -->
+    <div class="card-footer bg-light">
+        <div class="row text-center">
+            <div class="col-md-3">
+                <p class="text-muted small mb-1">Средний рейтинг</p>
+                <p class="fw-bold mb-0">
+                    {% set total_rating = ratings|sum(attribute='rating.total') %}
+                    {{ (total_rating / ratings|length)|round(1) if ratings|length > 0 else 0 }}
+                </p>
+            </div>
+            <div class="col-md-3">
+                <p class="text-muted small mb-1">Зачет сдали</p>
+                <p class="fw-bold mb-0 text-success">
+                    {{ ratings|selectattr('rating.passed')|list|length }} из {{ ratings|length }}
+                </p>
+            </div>
+            <div class="col-md-3">
+                <p class="text-muted small mb-1">% успешности</p>
+                <p class="fw-bold mb-0">
+                    {% if ratings|length > 0 %}
+                        {{ ((ratings|selectattr('rating.passed')|list|length / ratings|length) * 100)|round(1) }}%
+                    {% else %}
+                        0%
+                    {% endif %}
+                </p>
+            </div>
+            <div class="col-md-3">
+                <p class="text-muted small mb-1">Не сдали</p>
+                <p class="fw-bold mb-0 text-danger">
+                    {{ ratings|rejectattr('rating.passed')|list|length }}
+                </p>
+            </div>
+        </div>
+    </div>
+</div>
+{% else %}
+<div class="alert alert-info">
+    <i class="bi bi-info-circle me-2"></i>
+    В группе нет студентов.
+</div>
+{% endif %}
+{% endblock %}
+
+{% block extra_css %}
+<style>
+.avatar {
+    font-weight: 600;
+    font-size: 1.1rem;
+}
+
+.table-success {
+    --bs-table-bg: #d1e7dd;
+}
+
+.table-danger {
+    --bs-table-bg: #f8d7da;
+}
+</style>
+{% endblock %}

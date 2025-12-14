@@ -1,0 +1,188 @@
+{% extends "base.html" %}
+
+{% block title %}Нормативы{% endblock %}
+
+{% block content %}
+<!-- Header -->
+<div class="row mb-4">
+    <div class="col">
+        <nav aria-label="breadcrumb">
+            <ol class="breadcrumb">
+                <li class="breadcrumb-item">
+                    <a href="{{ url_for('admin.dashboard') }}">Админ-панель</a>
+                </li>
+                <li class="breadcrumb-item active">Нормативы</li>
+            </ol>
+        </nav>
+        
+        <div class="d-flex justify-content-between align-items-center flex-wrap">
+            <h2 class="mb-2 mb-md-0">
+                <i class="bi bi-stopwatch text-primary me-2"></i>
+                Нормативы
+            </h2>
+            <div class="d-flex gap-2">
+                <a href="{{ url_for('admin.standard_scales') }}" class="btn btn-outline-secondary">
+                    <i class="bi bi-sliders me-1"></i>
+                    <span class="d-none d-sm-inline">Оценочные шкалы</span>
+                    <span class="d-inline d-sm-none">Шкалы</span>
+                </a>
+                <a href="{{ url_for('admin.create_standard') }}" class="btn btn-primary">
+                    <i class="bi bi-plus-circle me-1"></i>
+                    <span class="d-none d-sm-inline">Добавить норматив</span>
+                    <span class="d-inline d-sm-none">Добавить</span>
+                </a>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Filters -->
+<div class="card border-0 shadow-sm mb-4">
+    <div class="card-body">
+        <form method="GET">
+            <div class="row g-3">
+                <div class="col-md-4">
+                    <label for="module_id" class="form-label small">Модуль</label>
+                    <select class="form-select form-select-sm" id="module_id" name="module_id">
+                        <option value="">-- Все модули --</option>
+                        {% for module in modules %}
+                        <option value="{{ module.id }}" 
+                                {% if selected_module_id == module.id %}selected{% endif %}>
+                            {{ module.name }}
+                        </option>
+                        {% endfor %}
+                    </select>
+                </div>
+                
+                <div class="col-md-4">
+                    <label for="theme_id" class="form-label small">Тема</label>
+                    <select class="form-select form-select-sm" id="theme_id" name="theme_id">
+                        <option value="">-- Все темы --</option>
+                        {% for theme in themes %}
+                        <option value="{{ theme.id }}" 
+                                {% if selected_theme_id == theme.id %}selected{% endif %}>
+                            {{ theme.name }}
+                        </option>
+                        {% endfor %}
+                    </select>
+                </div>
+                
+                <div class="col-md-4 d-flex align-items-end gap-2">
+                    <button type="submit" class="btn btn-primary btn-sm flex-grow-1">
+                        <i class="bi bi-funnel me-1"></i>
+                        Фильтровать
+                    </button>
+                    <a href="{{ url_for('admin.standards') }}" class="btn btn-outline-secondary btn-sm">
+                        <i class="bi bi-x-circle"></i>
+                    </a>
+                </div>
+            </div>
+        </form>
+    </div>
+</div>
+
+<!-- Stats -->
+<div class="row g-3 mb-4">
+    <div class="col-sm-6 col-lg-3">
+        <div class="card border-0 shadow-sm">
+            <div class="card-body">
+                <div class="d-flex justify-content-between align-items-center">
+                    <div>
+                        <p class="text-muted small mb-1">Всего нормативов</p>
+                        <h3 class="mb-0">{{ standards|length }}</h3>
+                    </div>
+                    <i class="bi bi-stopwatch text-primary" style="font-size: 2rem;"></i>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Standards List -->
+{% if standards %}
+<div class="row g-3">
+    {% for standard in standards %}
+    <div class="col-md-6 col-lg-4">
+        <div class="card border-0 shadow-sm h-100">
+            <div class="card-body">
+                <div class="d-flex justify-content-between align-items-start mb-3">
+                    <div class="flex-grow-1">
+                        <span class="badge bg-primary mb-2">{{ standard.theme.module.name }}</span>
+                        <h5 class="card-title mb-1">{{ standard.name }}</h5>
+                        <p class="text-muted small mb-0">
+                            <i class="bi bi-bookmark me-1"></i>
+                            {{ standard.theme.name }}
+                        </p>
+                    </div>
+                </div>
+                
+                <div class="mb-3">
+                    <div class="d-flex justify-content-between text-muted small mb-1">
+                        <span><i class="bi bi-rulers me-1"></i>Единица измерения</span>
+                        <strong class="text-dark">{{ standard.unit }}</strong>
+                    </div>
+                    <div class="d-flex justify-content-between text-muted small">
+                        <span><i class="bi bi-gender-ambiguous me-1"></i>Гендерная разница</span>
+                        <strong class="text-dark">
+                            {% if standard.gender_specific %}
+                                <i class="bi bi-check-circle text-success"></i> Да
+                            {% else %}
+                                <i class="bi bi-x-circle text-danger"></i> Нет
+                            {% endif %}
+                        </strong>
+                    </div>
+                </div>
+                
+                {% if standard.description %}
+                <p class="text-muted small mb-3">{{ standard.description|truncate(80) }}</p>
+                {% endif %}
+                
+                <div class="btn-group w-100" role="group">
+                    <a href="{{ url_for('admin.edit_standard', standard_id=standard.id) }}" 
+                       class="btn btn-outline-primary btn-sm">
+                        <i class="bi bi-pencil me-1"></i>
+                        <span class="d-none d-sm-inline">Редактировать</span>
+                        <span class="d-inline d-sm-none">Ред.</span>
+                    </a>
+                    <button type="button" 
+                            class="btn btn-outline-danger btn-sm"
+                            onclick="confirmDelete('{{ standard.id }}', '{{ standard.name }}')">
+                        <i class="bi bi-trash me-1"></i>
+                        <span class="d-none d-sm-inline">Удалить</span>
+                        <span class="d-inline d-sm-none">Удал.</span>
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+    {% endfor %}
+</div>
+{% else %}
+<div class="alert alert-info">
+    <i class="bi bi-info-circle me-2"></i>
+    Нормативы не найдены. 
+    {% if selected_module_id or selected_theme_id %}
+        Попробуйте изменить фильтр или <a href="{{ url_for('admin.standards') }}" class="alert-link">сбросить фильтры</a>.
+    {% else %}
+        Начните с создания нового норматива.
+    {% endif %}
+</div>
+{% endif %}
+
+<!-- Delete Form (hidden) -->
+<form id="deleteForm" method="POST" style="display: none;">
+    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+</form>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+function confirmDelete(standardId, standardName) {
+    if (confirm(`Вы уверены, что хотите удалить норматив "${standardName}"?`)) {
+        const form = document.getElementById('deleteForm');
+        form.action = `/admin/standards/${standardId}/delete`;
+        form.submit();
+    }
+}
+</script>
+{% endblock %}

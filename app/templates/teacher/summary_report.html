@@ -1,0 +1,232 @@
+{% extends "base.html" %}
+
+{% block title %}Сводный отчет - {{ group.name }}{% endblock %}
+
+{% block content %}
+<!-- Header -->
+<div class="row mb-4">
+    <div class="col">
+        <nav aria-label="breadcrumb">
+            <ol class="breadcrumb">
+                <li class="breadcrumb-item">
+                    <a href="{{ url_for('teacher.dashboard') }}">Главная</a>
+                </li>
+                <li class="breadcrumb-item">
+                    <a href="{{ url_for('teacher.reports') }}">Отчеты</a>
+                </li>
+                <li class="breadcrumb-item active">Сводный отчет</li>
+            </ol>
+        </nav>
+        
+        <div class="d-flex justify-content-between align-items-center">
+            <div>
+                <h2 class="mb-1">
+                    <i class="bi bi-clipboard-data text-primary me-2"></i>
+                    Сводный отчет
+                </h2>
+                <p class="text-muted mb-0">{{ group.name }} - Курс {{ group.course }}</p>
+            </div>
+            <button class="btn btn-primary" onclick="window.print()">
+                <i class="bi bi-printer me-1"></i>
+                Печать
+            </button>
+        </div>
+    </div>
+</div>
+
+<!-- Summary Statistics -->
+<div class="row g-3 mb-4">
+    <div class="col-md-3">
+        <div class="card border-0 shadow-sm text-center" style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);">
+            <div class="card-body text-white p-4">
+                <h2 class="mb-1">{{ summary.total_students }}</h2>
+                <p class="mb-0 small">Всего студентов</p>
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-md-3">
+        <div class="card border-0 shadow-sm text-center" style="background: linear-gradient(135deg, #43e97b 0%, #38f9d7 100%);">
+            <div class="card-body text-white p-4">
+                <h2 class="mb-1">{{ summary.passed }}</h2>
+                <p class="mb-0 small">Сдали зачет</p>
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-md-3">
+        <div class="card border-0 shadow-sm text-center" style="background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);">
+            <div class="card-body text-white p-4">
+                <h2 class="mb-1">{{ summary.failed }}</h2>
+                <p class="mb-0 small">Не сдали</p>
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-md-3">
+        <div class="card border-0 shadow-sm text-center" style="background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);">
+            <div class="card-body text-white p-4">
+                <h2 class="mb-1">{{ summary.pass_rate }}%</h2>
+                <p class="mb-0 small">% успешности</p>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Additional Stats -->
+<div class="row g-3 mb-4">
+    <div class="col-md-6">
+        <div class="card border-0 shadow-sm">
+            <div class="card-body">
+                <h5 class="mb-3">
+                    <i class="bi bi-calendar-check text-success me-2"></i>
+                    Средняя посещаемость
+                </h5>
+                <div class="d-flex justify-content-between align-items-center">
+                    <div class="flex-grow-1 me-3">
+                        <div class="progress" style="height: 30px;">
+                            <div class="progress-bar bg-success" 
+                                 role="progressbar" 
+                                 style="width: {{ summary.avg_attendance }}%">
+                                <strong>{{ summary.avg_attendance }}%</strong>
+                            </div>
+                        </div>
+                    </div>
+                    <h3 class="mb-0 text-success">{{ summary.avg_attendance }}%</h3>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-md-6">
+        <div class="card border-0 shadow-sm">
+            <div class="card-body">
+                <h5 class="mb-3">
+                    <i class="bi bi-star text-warning me-2"></i>
+                    Средний рейтинг
+                </h5>
+                <div class="d-flex justify-content-between align-items-center">
+                    <div class="flex-grow-1 me-3">
+                        <div class="progress" style="height: 30px;">
+                            <div class="progress-bar bg-warning" 
+                                 role="progressbar" 
+                                 style="width: {{ summary.avg_rating }}%">
+                                <strong>{{ summary.avg_rating }} баллов</strong>
+                            </div>
+                        </div>
+                    </div>
+                    <h3 class="mb-0 text-warning">{{ summary.avg_rating }}</h3>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Detailed Table -->
+<div class="card border-0 shadow-sm">
+    <div class="card-header bg-white border-0 py-3">
+        <h5 class="mb-0">
+            <i class="bi bi-list-ul text-primary me-2"></i>
+            Детальная информация по студентам
+        </h5>
+    </div>
+    
+    <div class="table-responsive">
+        <table class="table table-hover align-middle mb-0">
+            <thead class="table-light">
+                <tr>
+                    <th style="width: 5%;">#</th>
+                    <th style="width: 30%;">ФИО студента</th>
+                    <th style="width: 15%;" class="text-center">Посещаемость</th>
+                    <th style="width: 15%;" class="text-center">Модуль 1</th>
+                    <th style="width: 15%;" class="text-center">Модуль 2</th>
+                    <th style="width: 15%;" class="text-center">Общий рейтинг</th>
+                    <th style="width: 10%;" class="text-center">Статус</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for item in students_data %}
+                <tr class="{{ 'table-success' if item.rating.passed else 'table-danger' }}">
+                    <td>{{ loop.index }}</td>
+                    <td>
+                        <div class="d-flex align-items-center">
+                            <div class="avatar bg-primary text-white rounded-circle me-2 d-flex align-items-center justify-content-center" 
+                                 style="width: 35px; height: 35px; font-size: 0.9rem;">
+                                {{ item.student.full_name[0] }}
+                            </div>
+                            <div>
+                                <p class="mb-0 fw-bold small">{{ item.student.full_name }}</p>
+                                <p class="text-muted small mb-0">{{ item.student.student_number }}</p>
+                            </div>
+                        </div>
+                    </td>
+                    <td class="text-center">
+                        <span class="badge bg-{{ item.attendance_percentage|rating_badge }}">
+                            {{ item.attendance_percentage|round(1) }}%
+                        </span>
+                    </td>
+                    <td class="text-center">
+                        <span class="badge bg-{{ item.rating.module1|rating_badge }}">
+                            {{ item.rating.module1|round(1) }}
+                        </span>
+                    </td>
+                    <td class="text-center">
+                        <span class="badge bg-{{ item.rating.module2|rating_badge }}">
+                            {{ item.rating.module2|round(1) }}
+                        </span>
+                    </td>
+                    <td class="text-center">
+                        <span class="badge bg-{{ item.rating.total|rating_badge }} fs-6">
+                            {{ item.rating.total|round(1) }}
+                        </span>
+                    </td>
+                    <td class="text-center">
+                        {% if item.rating.passed %}
+                        <i class="bi bi-check-circle-fill text-success fs-5"></i>
+                        {% else %}
+                        <i class="bi bi-x-circle-fill text-danger fs-5"></i>
+                        {% endif %}
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+
+<!-- Back Button -->
+<div class="row mt-4">
+    <div class="col">
+        <a href="{{ url_for('teacher.reports') }}" class="btn btn-secondary">
+            <i class="bi bi-arrow-left me-1"></i>
+            Назад к отчетам
+        </a>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_css %}
+<style>
+.avatar {
+    font-weight: 600;
+}
+
+.table-success {
+    --bs-table-bg: #d1e7dd;
+}
+
+.table-danger {
+    --bs-table-bg: #f8d7da;
+}
+
+@media print {
+    .breadcrumb, .btn, nav {
+        display: none !important;
+    }
+    
+    .card {
+        break-inside: avoid;
+    }
+}
+</style>
+{% endblock %}

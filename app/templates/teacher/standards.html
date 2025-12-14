@@ -1,0 +1,550 @@
+{% extends "base.html" %}
+
+{% block title %}Работа с нормативами{% endblock %}
+
+{% block content %}
+<!-- Header -->
+<div class="row mb-4">
+    <div class="col">
+        <nav aria-label="breadcrumb">
+            <ol class="breadcrumb">
+                <li class="breadcrumb-item">
+                    <a href="{{ url_for('teacher.dashboard') }}">Главная</a>
+                </li>
+                <li class="breadcrumb-item active">Нормативы</li>
+            </ol>
+        </nav>
+        <h2 class="mb-0">
+            <i class="bi bi-stopwatch text-primary me-2"></i>
+            Работа с нормативами
+        </h2>
+    </div>
+</div>
+
+<!-- Filter Form -->
+<div class="row mb-4">
+    <div class="col">
+        <div class="card border-0 shadow-sm">
+            <div class="card-body">
+                <form method="GET" action="{{ url_for('teacher.standards') }}">
+                    <div class="row g-3">
+                        <div class="col-md-4">
+                            <label for="group_id" class="form-label">
+                                <i class="bi bi-people me-1"></i>Группа
+                            </label>
+                            <select class="form-select" id="group_id" name="group_id" required>
+                                <option value="">-- Выберите группу --</option>
+                                {% for group in groups %}
+                                <option value="{{ group.id }}" 
+                                        {% if selected_group and selected_group.id == group.id %}selected{% endif %}>
+                                    {{ group.name }} (Курс {{ group.course }})
+                                </option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                        
+                        <div class="col-md-6">
+                            <label for="theme_id" class="form-label">
+                                <i class="bi bi-bookmark me-1"></i>Тема
+                            </label>
+                            <select class="form-select" id="theme_id" name="theme_id" required>
+                                <option value="">-- Выберите тему --</option>
+                                {% for module in modules %}
+                                <optgroup label="Модуль {{ module.number }}: {{ module.name }}">
+                                    {% for theme in module.themes %}
+                                    <option value="{{ theme.id }}" 
+                                            {% if selected_theme and selected_theme.id == theme.id %}selected{% endif %}>
+                                        {{ theme.name }}
+                                    </option>
+                                    {% endfor %}
+                                </optgroup>
+                                {% endfor %}
+                            </select>
+                        </div>
+                        
+                        <div class="col-md-2 d-flex align-items-end">
+                            <button type="submit" class="btn btn-primary w-100">
+                                <i class="bi bi-funnel me-1"></i>Показать
+                            </button>
+                        </div>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Standards Table -->
+{% if selected_group and selected_theme and standards %}
+<div class="card border-0 shadow-sm">
+    <div class="card-header bg-white border-0 py-3">
+        <div class="d-flex justify-content-between align-items-center">
+            <h5 class="mb-0">
+                <i class="bi bi-list-check text-success me-2"></i>
+                {{ selected_group.name }} - {{ selected_theme.name }}
+            </h5>
+            <span class="badge bg-info">
+                <i class="bi bi-clipboard-data me-1"></i>
+                Нормативов: {{ standards|length }}
+            </span>
+        </div>
+    </div>
+    
+    <div class="table-responsive">
+        <table class="table table-hover align-middle mb-0">
+            <thead class="table-light">
+                <tr>
+                    <th style="width: 25%;">ФИО студента</th>
+                    {% for standard in standards %}
+                    <th class="text-center" style="width: {{ 75 / standards|length }}%;">
+                        <div>{{ standard.name }}</div>
+                        <small class="text-muted fw-normal">({{ standard.unit }})</small>
+                        {% if standard.gender != 'unisex' %}
+                        <br><span class="badge bg-secondary">{{ standard.gender|replace('male', 'М')|replace('female', 'Ж') }}</span>
+                        {% endif %}
+                    </th>
+                    {% endfor %}
+                </tr>
+            </thead>
+            <tbody>
+                {% for item in students_data %}
+                <tr data-student-id="{{ item.student.id }}">
+                    <td>
+                        <div class="d-flex align-items-center">
+                            <div class="avatar bg-primary text-white rounded-circle me-2 d-flex align-items-center justify-content-center" 
+                                 style="width: 35px; height: 35px; font-size: 0.9rem;">
+                                {{ item.student.full_name[0] }}
+                            </div>
+                            <div>
+                                <p class="mb-0 fw-bold small">{{ item.student.full_name }}</p>
+                                <p class="text-muted small mb-0">{{ item.student.gender|replace('male', 'М')|replace('female', 'Ж') }}</p>
+                            </div>
+                        </div>
+                    </td>
+                    {% for standard in standards %}
+                    <td class="text-center">
+                        {# ✅ ПРОВЕРКА ПОЛА: Определяем пол студента #}
+                        {% set is_male = item.student.gender in ['M', 'male', 'м', 'мужской'] %}
+                        {% set is_female = item.student.gender in ['F', 'female', 'ж', 'женский'] %}
+                        
+                        {# Определяем пол норматива из БД и из названия #}
+                        {% set standard_for_male = standard.gender in ['M', 'male'] or '(мужчины)' in standard.name.lower() or '(м)' in standard.name.lower() %}
+                        {% set standard_for_female = standard.gender in ['F', 'female'] or '(женщины)' in standard.name.lower() or '(ж)' in standard.name.lower() %}
+                        
+                        {# Норматив универсальный если нет маркера пола ни в БД, ни в названии #}
+                        {% set is_unisex = not standard.gender and not standard_for_male and not standard_for_female %}
+                        
+                        {# Проверка соответствия #}
+                        {% set is_gender_match = is_unisex or (is_male and standard_for_male) or (is_female and standard_for_female) %}
+                        
+                        {% if is_gender_match %}
+                            {% if item.results[standard.id] %}
+                            <div class="result-cell">
+                                <span class="badge bg-{{ item.results[standard.id].points|rating_badge }} mb-1">
+                                    {{ item.results[standard.id].result_value }} {{ standard.unit }}
+                                </span>
+                                <small class="d-block text-muted">
+                                    {{ item.results[standard.id].points }} баллов
+                                </small>
+                                <small class="d-block text-muted">
+                                    Попытка #{{ item.results[standard.id].attempt_number }}
+                                </small>
+                                <div class="mt-2">
+                                    <button class="btn btn-xs btn-outline-secondary me-1" 
+                                            onclick="editResult({{ item.results[standard.id].id }}, {{ item.student.id }}, {{ standard.id }}, '{{ item.student.full_name }}', '{{ standard.name }}', {{ item.results[standard.id].result_value }}, '{{ item.results[standard.id].date_achieved }}')">
+                                        <i class="bi bi-pencil"></i>
+                                    </button>
+                                    <button class="btn btn-xs btn-outline-danger" 
+                                            onclick="deleteResult({{ item.results[standard.id].id }}, '{{ item.student.full_name }}', '{{ standard.name }}')">
+                                        <i class="bi bi-trash"></i>
+                                    </button>
+                                </div>
+                            </div>
+                            {% else %}
+                            <button class="btn btn-sm btn-outline-primary" 
+                                    onclick="showAddResultModal({{ item.student.id }}, {{ standard.id }}, '{{ item.student.full_name }}', '{{ standard.name }}')">
+                                <i class="bi bi-plus-circle me-1"></i>Добавить
+                            </button>
+                            {% endif %}
+                        {% else %}
+                            {# ✅ Норматив не для этого пола - показать прочерк #}
+                            <span class="text-muted">—</span>
+                        {% endif %}
+                    </td>
+                    {% endfor %}
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+
+<!-- Add Result Modal -->
+<div class="modal fade" id="addResultModal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">
+                    <i class="bi bi-plus-circle me-2"></i>
+                    Добавить результат
+                </h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <form id="addResultForm">
+                    <input type="hidden" id="result_student_id">
+                    <input type="hidden" id="result_standard_id">
+                    
+                    <div class="mb-3">
+                        <label class="form-label fw-bold">Студент</label>
+                        <p id="result_student_name" class="text-muted mb-0"></p>
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label class="form-label fw-bold">Норматив</label>
+                        <p id="result_standard_name" class="text-muted mb-0"></p>
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label for="result_value" class="form-label">
+                            Результат <span class="text-danger">*</span>
+                        </label>
+                        <input type="number" 
+                               step="0.01" 
+                               class="form-control" 
+                               id="result_value" 
+                               required 
+                               placeholder="Введите результат">
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label for="result_date" class="form-label">
+                            Дата <span class="text-danger">*</span>
+                        </label>
+                        <input type="date" 
+                               class="form-control" 
+                               id="result_date" 
+                               required>
+                    </div>
+                    
+                    <div class="alert alert-info">
+                        <i class="bi bi-info-circle me-2"></i>
+                        Баллы будут рассчитаны автоматически по оценочной шкале.
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
+                    Отмена
+                </button>
+                <button type="button" class="btn btn-success" onclick="submitResult()">
+                    <i class="bi bi-check-circle me-1"></i>
+                    Сохранить
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Edit Result Modal -->
+<div class="modal fade" id="editResultModal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">
+                    <i class="bi bi-pencil me-2"></i>
+                    Редактировать результат
+                </h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <form id="editResultForm">
+                    <input type="hidden" id="edit_result_id">
+                    <input type="hidden" id="edit_student_id">
+                    <input type="hidden" id="edit_standard_id">
+                    
+                    <div class="mb-3">
+                        <label class="form-label fw-bold">Студент</label>
+                        <p id="edit_student_name" class="text-muted mb-0"></p>
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label class="form-label fw-bold">Норматив</label>
+                        <p id="edit_standard_name" class="text-muted mb-0"></p>
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label for="edit_result_value" class="form-label">
+                            Результат <span class="text-danger">*</span>
+                        </label>
+                        <input type="number" 
+                               step="0.01" 
+                               class="form-control" 
+                               id="edit_result_value" 
+                               required 
+                               placeholder="Введите результат">
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label for="edit_result_date" class="form-label">
+                            Дата <span class="text-danger">*</span>
+                        </label>
+                        <input type="date" 
+                               class="form-control" 
+                               id="edit_result_date" 
+                               required>
+                    </div>
+                    
+                    <div class="alert alert-info">
+                        <i class="bi bi-info-circle me-2"></i>
+                        Баллы будут пересчитаны автоматически по оценочной шкале.
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
+                    Отмена
+                </button>
+                <button type="button" class="btn btn-primary" onclick="updateResult()">
+                    <i class="bi bi-check-circle me-1"></i>
+                    Сохранить изменения
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+{% elif selected_group and selected_theme %}
+<div class="alert alert-warning">
+    <i class="bi bi-exclamation-triangle me-2"></i>
+    В выбранной теме нет активных нормативов.
+</div>
+{% else %}
+<div class="alert alert-info text-center py-5">
+    <i class="bi bi-arrow-up-circle" style="font-size: 3rem;"></i>
+    <h5 class="mt-3">Выберите группу и тему</h5>
+    <p class="text-muted">Используйте форму выше для работы с нормативами</p>
+</div>
+{% endif %}
+{% endblock %}
+
+{% block extra_js %}
+<script>
+let addResultModal;
+
+document.addEventListener('DOMContentLoaded', function() {
+    addResultModal = new bootstrap.Modal(document.getElementById('addResultModal'));
+    document.getElementById('result_date').valueAsDate = new Date();
+});
+
+function showAddResultModal(studentId, standardId, studentName, standardName) {
+    document.getElementById('result_student_id').value = studentId;
+    document.getElementById('result_standard_id').value = standardId;
+    document.getElementById('result_student_name').textContent = studentName;
+    document.getElementById('result_standard_name').textContent = standardName;
+    document.getElementById('result_value').value = '';
+    
+    addResultModal.show();
+}
+
+// Получить CSRF токен из meta тега или cookie
+function getCSRFToken() {
+    // Попробовать получить из meta тега
+    const metaToken = document.querySelector('meta[name="csrf-token"]');
+    if (metaToken) {
+        return metaToken.getAttribute('content');
+    }
+    
+    // Попробовать получить из cookie
+    const cookies = document.cookie.split(';');
+    for (let cookie of cookies) {
+        const [name, value] = cookie.trim().split('=');
+        if (name === 'csrf_token') {
+            return decodeURIComponent(value);
+        }
+    }
+    
+    // Последняя попытка - из скрытого input в любой форме
+    const hiddenInput = document.querySelector('input[name="csrf_token"]');
+    if (hiddenInput) {
+        return hiddenInput.value;
+    }
+    
+    return null;
+}
+
+async function submitResult() {
+    const studentId = document.getElementById('result_student_id').value;
+    const standardId = document.getElementById('result_standard_id').value;
+    const resultValue = document.getElementById('result_value').value;
+    const resultDate = document.getElementById('result_date').value;
+    
+    if (!resultValue || !resultDate) {
+        showToast('Заполните все обязательные поля', 'warning');
+        return;
+    }
+    
+    // Получить CSRF токен
+    const csrfToken = getCSRFToken();
+    if (!csrfToken) {
+        showToast('Ошибка: CSRF токен не найден. Перезагрузите страницу.', 'danger');
+        return;
+    }
+    
+    try {
+        const response = await fetch('{{ url_for("teacher.add_result") }}', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-CSRFToken': csrfToken  // ✅ Добавлен CSRF токен!
+            },
+            body: JSON.stringify({
+                student_id: parseInt(studentId),
+                standard_id: parseInt(standardId),
+                result_value: parseFloat(resultValue),
+                date: resultDate
+            })
+        });
+        
+        const data = await response.json();
+        
+        if (response.ok) {
+            showToast(`Результат добавлен. Баллы: ${data.points}, Попытка: ${data.attempt}`, 'success');
+            addResultModal.hide();
+            
+            // Перезагрузить страницу через 1 секунду
+            setTimeout(() => {
+                window.location.reload();
+            }, 1000);
+        } else {
+            throw new Error(data.error || 'Ошибка сохранения');
+        }
+    } catch (error) {
+        console.error('Error:', error);
+        showToast(error.message, 'danger');
+    }
+}
+
+let editResultModal;
+
+// Показать модальное окно редактирования
+function editResult(resultId, studentId, standardId, studentName, standardName, resultValue, dateAchieved) {
+    document.getElementById('edit_result_id').value = resultId;
+    document.getElementById('edit_student_id').value = studentId;
+    document.getElementById('edit_standard_id').value = standardId;
+    document.getElementById('edit_student_name').textContent = studentName;
+    document.getElementById('edit_standard_name').textContent = standardName;
+    document.getElementById('edit_result_value').value = resultValue;
+    document.getElementById('edit_result_date').value = dateAchieved;
+    
+    if (!editResultModal) {
+        editResultModal = new bootstrap.Modal(document.getElementById('editResultModal'));
+    }
+    editResultModal.show();
+}
+
+// Обновить результат
+async function updateResult() {
+    const resultId = document.getElementById('edit_result_id').value;
+    const resultValue = document.getElementById('edit_result_value').value;
+    const resultDate = document.getElementById('edit_result_date').value;
+    
+    if (!resultValue || !resultDate) {
+        showToast('Заполните все обязательные поля', 'warning');
+        return;
+    }
+    
+    const csrfToken = getCSRFToken();
+    if (!csrfToken) {
+        showToast('Ошибка: CSRF токен не найден. Перезагрузите страницу.', 'danger');
+        return;
+    }
+    
+    try {
+        const response = await fetch(`/teacher/standards/edit-result/${resultId}`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-CSRFToken': csrfToken
+            },
+            body: JSON.stringify({
+                result_value: parseFloat(resultValue),
+                date: resultDate
+            })
+        });
+        
+        const data = await response.json();
+        
+        if (response.ok) {
+            showToast(`Результат обновлен. Новые баллы: ${data.points}`, 'success');
+            editResultModal.hide();
+            
+            setTimeout(() => {
+                window.location.reload();
+            }, 1000);
+        } else {
+            throw new Error(data.error || 'Ошибка обновления');
+        }
+    } catch (error) {
+        console.error('Error:', error);
+        showToast(error.message, 'danger');
+    }
+}
+
+// Удалить результат
+async function deleteResult(resultId, studentName, standardName) {
+    if (!confirm(`Удалить результат "${standardName}" для студента "${studentName}"?`)) {
+        return;
+    }
+    
+    const csrfToken = getCSRFToken();
+    if (!csrfToken) {
+        showToast('Ошибка: CSRF токен не найден. Перезагрузите страницу.', 'danger');
+        return;
+    }
+    
+    try {
+        const response = await fetch(`/teacher/standards/delete-result/${resultId}`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-CSRFToken': csrfToken
+            }
+        });
+        
+        const data = await response.json();
+        
+        if (response.ok) {
+            showToast('Результат удален', 'success');
+            
+            setTimeout(() => {
+                window.location.reload();
+            }, 1000);
+        } else {
+            throw new Error(data.error || 'Ошибка удаления');
+        }
+    } catch (error) {
+        console.error('Error:', error);
+        showToast(error.message, 'danger');
+    }
+}
+</script>
+{% endblock %}
+
+{% block extra_css %}
+<style>
+.avatar {
+    font-weight: 600;
+}
+
+.result-cell {
+    min-width: 120px;
+}
+
+.btn-xs {
+    padding: 0.15rem 0.4rem;
+    font-size: 0.75rem;
+    line-height: 1.2;
+}
+</style>
+{% endblock %}

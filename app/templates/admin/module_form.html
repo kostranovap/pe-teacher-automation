@@ -1,0 +1,122 @@
+{% extends "base.html" %}
+
+{% block title %}{{ 'Редактировать модуль' if module else 'Создать модуль' }}{% endblock %}
+
+{% block content %}
+<!-- Header -->
+<div class="row mb-4">
+    <div class="col">
+        <nav aria-label="breadcrumb">
+            <ol class="breadcrumb">
+                <li class="breadcrumb-item">
+                    <a href="{{ url_for('admin.dashboard') }}">Админ-панель</a>
+                </li>
+                <li class="breadcrumb-item">
+                    <a href="{{ url_for('admin.modules') }}">Модули и темы</a>
+                </li>
+                <li class="breadcrumb-item active">
+                    {{ 'Редактировать' if module else 'Создать' }}
+                </li>
+            </ol>
+        </nav>
+        
+        <h2>
+            <i class="bi bi-{{ 'pencil' if module else 'plus-circle' }} text-primary me-2"></i>
+            {{ 'Редактировать модуль' if module else 'Создать модуль' }}
+        </h2>
+    </div>
+</div>
+
+<!-- Info Alert -->
+{% if not module %}
+<div class="alert alert-info mb-4">
+    <i class="bi bi-info-circle me-2"></i>
+    <strong>Модуль</strong> - это семестр или раздел курса (например, "Модуль 1", "Модуль 2").
+    В каждом модуле будут темы (Легкая атлетика, Баскетбол и т.д.).
+</div>
+{% endif %}
+
+<!-- Form -->
+<div class="row">
+    <div class="col-lg-8 mx-auto">
+        <div class="card border-0 shadow-sm">
+            <div class="card-body p-4">
+                <form method="POST" action="{{ url_for('admin.edit_module', module_id=module.id) if module else url_for('admin.create_module') }}">
+                    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                    
+                    <!-- Номер и Название в одной строке -->
+                    <div class="row mb-3">
+                        <div class="col-md-3">
+                            <label for="number" class="form-label">
+                                Номер <span class="text-danger">*</span>
+                            </label>
+                            <input type="number" 
+                                   class="form-control" 
+                                   id="number" 
+                                   name="number" 
+                                   min="1" 
+                                   max="10" 
+                                   value="{{ module.number if module else '' }}" 
+                                   required>
+                            <small class="text-muted">1-10</small>
+                        </div>
+                        
+                        <div class="col-md-9">
+                            <label for="name" class="form-label">
+                                Название <span class="text-danger">*</span>
+                            </label>
+                            <input type="text" 
+                                   class="form-control" 
+                                   id="name" 
+                                   name="name" 
+                                   value="{{ module.name if module else '' }}" 
+                                   placeholder="Модуль 1"
+                                   required>
+                        </div>
+                    </div>
+                    
+                    <!-- Максимум баллов -->
+                    <div class="mb-3">
+                        <label for="max_points" class="form-label">
+                            Максимум баллов <span class="text-danger">*</span>
+                        </label>
+                        <input type="number" 
+                               class="form-control" 
+                               id="max_points" 
+                               name="max_points" 
+                               min="1" 
+                               max="100" 
+                               value="{{ module.max_points if module else 50 }}" 
+                               required>
+                        <small class="text-muted">Сумма баллов всех тем в модуле не должна превышать это значение</small>
+                    </div>
+                    
+                    <!-- Разделитель -->
+                    <hr class="my-4">
+                    
+                    <!-- Кнопки -->
+                    <div class="d-flex justify-content-between">
+                        <a href="{{ url_for('admin.modules') }}" class="btn btn-secondary">
+                            <i class="bi bi-arrow-left me-1"></i>
+                            Отмена
+                        </a>
+                        
+                        <button type="submit" class="btn btn-primary">
+                            <i class="bi bi-{{ 'check-circle' if module else 'plus-circle' }} me-1"></i>
+                            {{ 'Сохранить' if module else 'Создать' }}
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+        
+        <!-- Подсказка после создания -->
+        {% if not module %}
+        <div class="alert alert-light mt-3">
+            <i class="bi bi-lightbulb me-2"></i>
+            <strong>Следующий шаг:</strong> После создания модуля добавьте в него темы.
+        </div>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}

@@ -1,0 +1,209 @@
+{% extends "base.html" %}
+
+{% block title %}{% if standard %}Редактировать{% else %}Создать{% endif %} норматив{% endblock %}
+
+{% block content %}
+<!-- Header -->
+<div class="row mb-4">
+    <div class="col">
+        <nav aria-label="breadcrumb">
+            <ol class="breadcrumb">
+                <li class="breadcrumb-item">
+                    <a href="{{ url_for('admin.dashboard') }}">Админ-панель</a>
+                </li>
+                <li class="breadcrumb-item">
+                    <a href="{{ url_for('admin.standards') }}">Нормативы</a>
+                </li>
+                <li class="breadcrumb-item active">
+                    {% if standard %}Редактировать{% else %}Создать{% endif %}
+                </li>
+            </ol>
+        </nav>
+        
+        <h2 class="mb-0">
+            <i class="bi bi-stopwatch text-primary me-2"></i>
+            {% if standard %}Редактировать норматив{% else %}Новый норматив{% endif %}
+        </h2>
+    </div>
+</div>
+
+<!-- Form Card -->
+<div class="row justify-content-center">
+    <div class="col-lg-10">
+        <div class="card border-0 shadow-sm">
+            <div class="card-body p-3 p-md-4">
+                <form method="POST">
+                    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                    
+                    <div class="row g-3">
+                        <div class="col-md-8">
+                            <label for="name" class="form-label">
+                                <i class="bi bi-pencil me-1"></i>
+                                Название норматива <span class="text-danger">*</span>
+                            </label>
+                            <input type="text" 
+                                   class="form-control" 
+                                   id="name" 
+                                   name="name" 
+                                   placeholder="Бег 100м"
+                                   value="{{ standard.name if standard else '' }}"
+                                   required>
+                        </div>
+                        
+                        <div class="col-md-4">
+                            <label for="unit" class="form-label">
+                                <i class="bi bi-rulers me-1"></i>
+                                Единица измерения <span class="text-danger">*</span>
+                            </label>
+                            <input type="text" 
+                                   class="form-control" 
+                                   id="unit" 
+                                   name="unit" 
+                                   placeholder="сек"
+                                   value="{{ standard.unit if standard else '' }}"
+                                   required>
+                            <div class="form-text">Например: сек, м, см, раз</div>
+                        </div>
+                    </div>
+                    
+                    <div class="row g-3 mt-2">
+                        <div class="col-md-6">
+                            <label for="module_id" class="form-label">
+                                <i class="bi bi-collection me-1"></i>
+                                Модуль <span class="text-danger">*</span>
+                            </label>
+                            <select class="form-select" id="module_id" name="module_id" required onchange="loadThemes(this.value)">
+                                <option value="">-- Выберите модуль --</option>
+                                {% for module in modules %}
+                                <option value="{{ module.id }}" 
+                                        {% if standard and standard.theme.module_id == module.id %}selected{% endif %}>
+                                    {{ module.name }}
+                                </option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                        
+                        <div class="col-md-6">
+                            <label for="theme_id" class="form-label">
+                                <i class="bi bi-bookmark me-1"></i>
+                                Тема <span class="text-danger">*</span>
+                            </label>
+                            <select class="form-select" id="theme_id" name="theme_id" required>
+                                <option value="">-- Выберите тему --</option>
+                                {% if standard %}
+                                    {% for theme in themes %}
+                                    <option value="{{ theme.id }}" 
+                                            {% if standard.theme_id == theme.id %}selected{% endif %}>
+                                        {{ theme.name }}
+                                    </option>
+                                    {% endfor %}
+                                {% endif %}
+                            </select>
+                        </div>
+                    </div>
+                    
+                    <div class="row g-3 mt-2">
+                        <div class="col-md-12">
+                            <label for="description" class="form-label">
+                                <i class="bi bi-text-paragraph me-1"></i>
+                                Описание (необязательно)
+                            </label>
+                            <textarea class="form-control" 
+                                      id="description" 
+                                      name="description" 
+                                      rows="3" 
+                                      placeholder="Описание техники выполнения норматива">{{ standard.description if standard else '' }}</textarea>
+                        </div>
+                    </div>
+                    
+                    <div class="row g-3 mt-2">
+                        <div class="col-md-6">
+                            <div class="form-check">
+                                <input class="form-check-input" 
+                                       type="checkbox" 
+                                       id="gender_specific" 
+                                       name="gender_specific"
+                                       {% if standard and standard.gender_specific %}checked{% endif %}>
+                                <label class="form-check-label" for="gender_specific">
+                                    <i class="bi bi-gender-ambiguous me-1"></i>
+                                    Разные шкалы для мужчин и женщин
+                                </label>
+                                <div class="form-text">
+                                    Отметьте, если норматив оценивается по-разному для разных полов
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="col-md-6">
+                            <div class="form-check">
+                                <input class="form-check-input" 
+                                       type="checkbox" 
+                                       id="lower_is_better" 
+                                       name="lower_is_better"
+                                       {% if standard and standard.lower_is_better %}checked{% endif %}>
+                                <label class="form-check-label" for="lower_is_better">
+                                    <i class="bi bi-arrow-down me-1"></i>
+                                    Меньше — лучше
+                                </label>
+                                <div class="form-text">
+                                    Для нормативов на время (бег) или расстояние до цели
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="alert alert-info mt-3">
+                        <i class="bi bi-info-circle me-2"></i>
+                        <small>
+                            После создания норматива не забудьте настроить оценочные шкалы в разделе 
+                            <a href="{{ url_for('admin.standard_scales') }}" class="alert-link">Оценочные шкалы</a>
+                        </small>
+                    </div>
+                    
+                    <div class="d-grid gap-2 d-md-flex justify-content-md-between mt-4">
+                        <a href="{{ url_for('admin.standards') }}" class="btn btn-outline-secondary">
+                            <i class="bi bi-arrow-left me-1"></i>
+                            Отмена
+                        </a>
+                        <button type="submit" class="btn btn-primary">
+                            <i class="bi bi-check-circle me-1"></i>
+                            {% if standard %}Сохранить{% else %}Создать{% endif %}
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+// Динамическая загрузка тем при выборе модуля
+function loadThemes(moduleId) {
+    const themeSelect = document.getElementById('theme_id');
+    themeSelect.innerHTML = '<option value="">-- Загрузка... --</option>';
+    
+    if (!moduleId) {
+        themeSelect.innerHTML = '<option value="">-- Выберите тему --</option>';
+        return;
+    }
+    
+    fetch(`/api/modules/${moduleId}/themes`)
+        .then(response => response.json())
+        .then(themes => {
+            themeSelect.innerHTML = '<option value="">-- Выберите тему --</option>';
+            themes.forEach(theme => {
+                const option = document.createElement('option');
+                option.value = theme.id;
+                option.textContent = theme.name;
+                themeSelect.appendChild(option);
+            });
+        })
+        .catch(error => {
+            console.error('Ошибка загрузки тем:', error);
+            themeSelect.innerHTML = '<option value="">-- Ошибка загрузки --</option>';
+        });
+}
+</script>
+{% endblock %}

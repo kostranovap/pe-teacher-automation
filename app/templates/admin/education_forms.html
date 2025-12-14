@@ -1,0 +1,117 @@
+{% extends "base.html" %}
+
+{% block title %}Формы обучения{% endblock %}
+
+{% block content %}
+<!-- Header -->
+<div class="row mb-4">
+    <div class="col">
+        <nav aria-label="breadcrumb">
+            <ol class="breadcrumb">
+                <li class="breadcrumb-item">
+                    <a href="{{ url_for('admin.dashboard') }}">Админ-панель</a>
+                </li>
+                <li class="breadcrumb-item active">Формы обучения</li>
+            </ol>
+        </nav>
+        
+        <div class="d-flex justify-content-between align-items-center flex-wrap">
+            <h2 class="mb-2 mb-md-0">
+                <i class="bi bi-calendar3 text-primary me-2"></i>
+                Формы обучения
+            </h2>
+            <a href="{{ url_for('admin.create_education_form') }}" class="btn btn-primary">
+                <i class="bi bi-plus-circle me-1"></i>
+                <span class="d-none d-sm-inline">Добавить форму</span>
+                <span class="d-inline d-sm-none">Добавить</span>
+            </a>
+        </div>
+    </div>
+</div>
+
+<!-- Stats -->
+<div class="row g-3 mb-4">
+    <div class="col-sm-6 col-lg-4">
+        <div class="card border-0 shadow-sm">
+            <div class="card-body">
+                <div class="d-flex justify-content-between align-items-center">
+                    <div>
+                        <p class="text-muted small mb-1">Всего форм обучения</p>
+                        <h3 class="mb-0">{{ forms|length }}</h3>
+                    </div>
+                    <i class="bi bi-calendar3 text-primary" style="font-size: 2rem;"></i>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Forms List -->
+{% if forms %}
+<div class="row g-3">
+    {% for form in forms %}
+    <div class="col-md-6 col-lg-4">
+        <div class="card border-0 shadow-sm h-100">
+            <div class="card-body">
+                <div class="d-flex justify-content-between align-items-start mb-3">
+                    <div class="flex-grow-1">
+                        <h5 class="card-title mb-2">{{ form.name }}</h5>
+                        <p class="text-muted small mb-0">
+                            <i class="bi bi-clock me-1"></i>
+                            Продолжительность: {{ form.duration_years }} лет
+                        </p>
+                    </div>
+                </div>
+                
+                <div class="mb-3">
+                    <div class="d-flex justify-content-between text-muted small">
+                        <span><i class="bi bi-people me-1"></i>Групп</span>
+                        <strong class="text-dark">{{ form.groups.count() }}</strong>
+                    </div>
+                </div>
+                
+                <div class="btn-group w-100" role="group">
+                    <button type="button" 
+                            class="btn btn-outline-danger btn-sm w-100"
+                            onclick="confirmDelete('{{ form.id }}', '{{ form.name }}')"
+                            {% if form.groups.count() > 0 %}disabled{% endif %}>
+                        <i class="bi bi-trash me-1"></i>
+                        Удалить
+                    </button>
+                </div>
+                
+                {% if form.groups.count() > 0 %}
+                <div class="alert alert-info mt-2 mb-0 small">
+                    <i class="bi bi-info-circle me-1"></i>
+                    Есть привязанные группы
+                </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+    {% endfor %}
+</div>
+{% else %}
+<div class="alert alert-info">
+    <i class="bi bi-info-circle me-2"></i>
+    Формы обучения еще не добавлены. Начните с создания новой формы обучения.
+</div>
+{% endif %}
+
+<!-- Delete Form (hidden) -->
+<form id="deleteForm" method="POST" style="display: none;">
+    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+</form>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+function confirmDelete(formId, formName) {
+    if (confirm(`Вы уверены, что хотите удалить форму обучения "${formName}"?`)) {
+        const form = document.getElementById('deleteForm');
+        form.action = `/admin/education-forms/${formId}/delete`;
+        form.submit();
+    }
+}
+</script>
+{% endblock %}

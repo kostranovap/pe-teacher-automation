@@ -1,0 +1,189 @@
+{% extends "base.html" %}
+
+{% block title %}История посещаемости - {{ group.name }}{% endblock %}
+
+{% block content %}
+<!-- Header -->
+<div class="row mb-4">
+    <div class="col">
+        <nav aria-label="breadcrumb">
+            <ol class="breadcrumb">
+                <li class="breadcrumb-item">
+                    <a href="{{ url_for('teacher.dashboard') }}">Главная</a>
+                </li>
+                <li class="breadcrumb-item">
+                    <a href="{{ url_for('teacher.groups') }}">Группы</a>
+                </li>
+                <li class="breadcrumb-item">
+                    <a href="{{ url_for('teacher.group_details', group_id=group.id) }}">{{ group.name }}</a>
+                </li>
+                <li class="breadcrumb-item active">История посещаемости</li>
+            </ol>
+        </nav>
+        
+        <h2 class="mb-0">
+            <i class="bi bi-calendar3 text-primary me-2"></i>
+            История посещаемости - {{ group.name }}
+        </h2>
+    </div>
+</div>
+
+<!-- Filter Form -->
+<div class="row mb-4">
+    <div class="col">
+        <div class="card border-0 shadow-sm">
+            <div class="card-body">
+                <form method="GET" action="{{ url_for('teacher.attendance_history', group_id=group.id) }}">
+                    <div class="row g-3 align-items-end">
+                        <div class="col-md-4">
+                            <label for="date_from" class="form-label">
+                                <i class="bi bi-calendar-event me-1"></i>Период с
+                            </label>
+                            <input type="date" 
+                                   class="form-control" 
+                                   id="date_from" 
+                                   name="date_from" 
+                                   value="{{ date_from }}">
+                        </div>
+                        
+                        <div class="col-md-4">
+                            <label for="date_to" class="form-label">
+                                <i class="bi bi-calendar-event me-1"></i>по
+                            </label>
+                            <input type="date" 
+                                   class="form-control" 
+                                   id="date_to" 
+                                   name="date_to" 
+                                   value="{{ date_to }}">
+                        </div>
+                        
+                        <div class="col-md-4">
+                            <button type="submit" class="btn btn-primary w-100">
+                                <i class="bi bi-funnel me-1"></i>Применить фильтр
+                            </button>
+                        </div>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Statistics Table -->
+{% if students_stats %}
+<div class="card border-0 shadow-sm">
+    <div class="card-header bg-white border-0 py-3">
+        <h5 class="mb-0">
+            <i class="bi bi-bar-chart text-success me-2"></i>
+            Статистика посещаемости
+        </h5>
+    </div>
+    
+    <div class="table-responsive">
+        <table class="table table-hover align-middle mb-0">
+            <thead class="table-light">
+                <tr>
+                    <th style="width: 5%;">#</th>
+                    <th style="width: 35%;">ФИО студента</th>
+                    <th style="width: 12%;" class="text-center">Всего занятий</th>
+                    <th style="width: 12%;" class="text-center">Присутствовал</th>
+                    <th style="width: 12%;" class="text-center">Отсутствовал</th>
+                    <th style="width: 12%;" class="text-center">Уважительная</th>
+                    <th style="width: 12%;" class="text-center">% Посещаемости</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for item in students_stats %}
+                <tr>
+                    <td>{{ loop.index }}</td>
+                    <td>
+                        <div class="d-flex align-items-center">
+                            <div class="avatar bg-primary text-white rounded-circle me-2 d-flex align-items-center justify-content-center" 
+                                 style="width: 40px; height: 40px;">
+                                {{ item.student.full_name[0] }}
+                            </div>
+                            <div>
+                                <p class="mb-0 fw-bold">{{ item.student.full_name }}</p>
+                                <p class="text-muted small mb-0">{{ item.student.student_number }}</p>
+                            </div>
+                        </div>
+                    </td>
+                    <td class="text-center">
+                        <span class="badge bg-secondary">{{ item.total }}</span>
+                    </td>
+                    <td class="text-center">
+                        <span class="badge bg-success">{{ item.present }}</span>
+                    </td>
+                    <td class="text-center">
+                        <span class="badge bg-danger">{{ item.absent }}</span>
+                    </td>
+                    <td class="text-center">
+                        <span class="badge bg-warning">{{ item.excused }}</span>
+                    </td>
+                    <td class="text-center">
+                        <div class="d-flex flex-column align-items-center">
+                            <span class="badge bg-{{ item.percentage|rating_badge }} mb-1 fs-6">
+                                {{ item.percentage }}%
+                            </span>
+                            <div class="progress" style="width: 80px; height: 5px;">
+                                <div class="progress-bar bg-{{ item.percentage|rating_badge }}" 
+                                     style="width: {{ item.percentage }}%">
+                                </div>
+                            </div>
+                        </div>
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+    
+    <!-- Summary Footer -->
+    <div class="card-footer bg-light">
+        <div class="row text-center">
+            <div class="col-md-3">
+                <p class="text-muted small mb-1">Средняя посещаемость</p>
+                <p class="fw-bold mb-0">
+                    {% set total_percentage = students_stats|sum(attribute='percentage') %}
+                    {% if students_stats|length > 0 %}
+                        {{ (total_percentage / students_stats|length)|round(1) }}%
+                    {% else %}
+                        0%
+                    {% endif %}
+                </p>
+            </div>
+            <div class="col-md-3">
+                <p class="text-muted small mb-1">Всего студентов</p>
+                <p class="fw-bold mb-0">{{ students_stats|length }}</p>
+            </div>
+            <div class="col-md-3">
+                <p class="text-muted small mb-1">Отличная посещаемость (≥90%)</p>
+                <p class="fw-bold mb-0 text-success">
+                    {{ students_stats|selectattr('percentage', '>=', 90)|list|length }}
+                </p>
+            </div>
+            <div class="col-md-3">
+                <p class="text-muted small mb-1">Плохая посещаемость (<60%)</p>
+                <p class="fw-bold mb-0 text-danger">
+                    {{ students_stats|selectattr('percentage', '<', 60)|list|length }}
+                </p>
+            </div>
+        </div>
+    </div>
+</div>
+{% else %}
+<div class="alert alert-info">
+    <i class="bi bi-info-circle me-2"></i>
+    Нет данных о посещаемости за выбранный период.
+</div>
+{% endif %}
+{% endblock %}
+
+{% block extra_css %}
+<style>
+.avatar {
+    font-weight: 600;
+    font-size: 1.1rem;
+}
+</style>
+{% endblock %}

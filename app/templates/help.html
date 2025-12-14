@@ -1,0 +1,336 @@
+{% extends "base.html" %}
+
+{% block title %}Справка{% endblock %}
+
+{% block content %}
+<!-- Header -->
+<div class="row mb-4">
+    <div class="col-lg-8 mx-auto text-center">
+        <h1 class="display-5 mb-3">Справка</h1>
+        <p class="lead text-muted">
+            Инструкции по работе с системой
+        </p>
+    </div>
+</div>
+
+<!-- Quick Links -->
+<div class="row g-3 mb-5">
+    <div class="col-md-6 col-lg-3">
+        <a href="#login" class="text-decoration-none">
+            <div class="card border-0 shadow-sm h-100 text-center p-3 hover-card">
+                <i class="bi bi-box-arrow-in-right text-primary mb-2" style="font-size: 2rem;"></i>
+                <h6 class="mb-0">Вход в систему</h6>
+            </div>
+        </a>
+    </div>
+    <div class="col-md-6 col-lg-3">
+        <a href="#teacher" class="text-decoration-none">
+            <div class="card border-0 shadow-sm h-100 text-center p-3 hover-card">
+                <i class="bi bi-person-badge text-success mb-2" style="font-size: 2rem;"></i>
+                <h6 class="mb-0">Для преподавателей</h6>
+            </div>
+        </a>
+    </div>
+    <div class="col-md-6 col-lg-3">
+        <a href="#student" class="text-decoration-none">
+            <div class="card border-0 shadow-sm h-100 text-center p-3 hover-card">
+                <i class="bi bi-mortarboard text-info mb-2" style="font-size: 2rem;"></i>
+                <h6 class="mb-0">Для студентов</h6>
+            </div>
+        </a>
+    </div>
+    <div class="col-md-6 col-lg-3">
+        <a href="#faq" class="text-decoration-none">
+            <div class="card border-0 shadow-sm h-100 text-center p-3 hover-card">
+                <i class="bi bi-question-circle text-warning mb-2" style="font-size: 2rem;"></i>
+                <h6 class="mb-0">FAQ</h6>
+            </div>
+        </a>
+    </div>
+</div>
+
+<!-- Login Instructions -->
+<div class="row mb-5" id="login">
+    <div class="col-lg-10 mx-auto">
+        <div class="card border-0 shadow-sm">
+            <div class="card-body p-4">
+                <h4 class="mb-3">
+                    <i class="bi bi-box-arrow-in-right text-primary me-2"></i>
+                    Вход в систему
+                </h4>
+                <ol class="text-muted">
+                    <li class="mb-2">Откройте страницу входа</li>
+                    <li class="mb-2">Введите свой email и пароль</li>
+                    <li class="mb-2">Нажмите кнопку "Войти"</li>
+                    <li class="mb-2">При необходимости поставьте галочку "Запомнить меня"</li>
+                </ol>
+                <div class="alert alert-info mb-0">
+                    <i class="bi bi-info-circle me-2"></i>
+                    <small>
+                        Если вы забыли пароль или у вас нет доступа к системе, 
+                        обратитесь к администратору по адресу support@muiv.ru
+                    </small>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Teacher Instructions -->
+<div class="row mb-5" id="teacher">
+    <div class="col-lg-10 mx-auto">
+        <div class="card border-0 shadow-sm">
+            <div class="card-body p-4">
+                <h4 class="mb-4">
+                    <i class="bi bi-person-badge text-success me-2"></i>
+                    Инструкции для преподавателей
+                </h4>
+                
+                <!-- Attendance -->
+                <h6 class="mb-3">
+                    <i class="bi bi-clipboard-check text-primary me-2"></i>
+                    Отметка посещаемости
+                </h6>
+                <ol class="text-muted mb-4">
+                    <li class="mb-2">Перейдите в раздел "Посещаемость"</li>
+                    <li class="mb-2">Выберите группу и дату занятия</li>
+                    <li class="mb-2">Отметьте присутствующих/отсутствующих студентов</li>
+                    <li class="mb-2">Система автоматически сохранит изменения</li>
+                </ol>
+                
+                <!-- Standards -->
+                <h6 class="mb-3">
+                    <i class="bi bi-stopwatch text-success me-2"></i>
+                    Внесение результатов нормативов
+                </h6>
+                <ol class="text-muted mb-4">
+                    <li class="mb-2">Перейдите в раздел "Нормативы"</li>
+                    <li class="mb-2">Выберите группу, модуль и тему</li>
+                    <li class="mb-2">Выберите норматив</li>
+                    <li class="mb-2">Введите результат студента</li>
+                    <li class="mb-2">Система автоматически рассчитает баллы</li>
+                </ol>
+                
+                <!-- Rating -->
+                <h6 class="mb-3">
+                    <i class="bi bi-graph-up text-info me-2"></i>
+                    Просмотр рейтинга
+                </h6>
+                <ol class="text-muted mb-4">
+                    <li class="mb-2">Перейдите в раздел "Мои группы"</li>
+                    <li class="mb-2">Выберите группу</li>
+                    <li class="mb-2">Нажмите "Рейтинг"</li>
+                    <li class="mb-2">Просмотрите детальную статистику по каждому студенту</li>
+                </ol>
+                
+                <!-- Statements -->
+                <h6 class="mb-3">
+                    <i class="bi bi-file-earmark-text text-warning me-2"></i>
+                    Формирование ведомостей
+                </h6>
+                <ol class="text-muted mb-0">
+                    <li class="mb-2">Перейдите в раздел "Ведомости"</li>
+                    <li class="mb-2">Нажмите "Создать ведомость"</li>
+                    <li class="mb-2">Выберите группу и тип ведомости</li>
+                    <li class="mb-2">Система автоматически заполнит данные</li>
+                    <li class="mb-2">При необходимости экспортируйте в нужный формат</li>
+                </ol>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Student Instructions -->
+<div class="row mb-5" id="student">
+    <div class="col-lg-10 mx-auto">
+        <div class="card border-0 shadow-sm">
+            <div class="card-body p-4">
+                <h4 class="mb-4">
+                    <i class="bi bi-mortarboard text-info me-2"></i>
+                    Инструкции для студентов
+                </h4>
+                
+                <h6 class="mb-3">
+                    <i class="bi bi-search text-primary me-2"></i>
+                    Поиск своего профиля
+                </h6>
+                <ol class="text-muted mb-4">
+                    <li class="mb-2">Перейдите в раздел "Поиск студента" на главной странице</li>
+                    <li class="mb-2">Введите свой номер студенческого билета или ФИО</li>
+                    <li class="mb-2">Нажмите "Найти"</li>
+                    <li class="mb-2">Просмотрите свою статистику</li>
+                </ol>
+                
+                <h6 class="mb-3">
+                    <i class="bi bi-star text-warning me-2"></i>
+                    Что вы можете посмотреть
+                </h6>
+                <ul class="text-muted mb-0">
+                    <li class="mb-2">
+                        <strong>Посещаемость:</strong> процент посещенных занятий и баллы
+                    </li>
+                    <li class="mb-2">
+                        <strong>Результаты нормативов:</strong> оценки по каждому нормативу
+                    </li>
+                    <li class="mb-2">
+                        <strong>Рейтинг:</strong> итоговый балл и позиция в группе
+                    </li>
+                    <li class="mb-2">
+                        <strong>Задания:</strong> список текущих и выполненных заданий
+                    </li>
+                </ul>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- FAQ -->
+<div class="row mb-5" id="faq">
+    <div class="col-lg-10 mx-auto">
+        <div class="card border-0 shadow-sm">
+            <div class="card-body p-4">
+                <h4 class="mb-4">
+                    <i class="bi bi-question-circle text-warning me-2"></i>
+                    Часто задаваемые вопросы
+                </h4>
+                
+                <div class="accordion" id="faqAccordion">
+                    <!-- Question 1 -->
+                    <div class="accordion-item border-0 mb-2">
+                        <h2 class="accordion-header">
+                            <button class="accordion-button collapsed" type="button" 
+                                    data-bs-toggle="collapse" data-bs-target="#faq1">
+                                Как рассчитывается итоговый рейтинг?
+                            </button>
+                        </h2>
+                        <div id="faq1" class="accordion-collapse collapse" data-bs-parent="#faqAccordion">
+                            <div class="accordion-body text-muted">
+                                Итоговый рейтинг складывается из трех компонентов:
+                                <ul class="mt-2 mb-0">
+                                    <li>Посещаемость (до 30 баллов)</li>
+                                    <li>Модуль 1 (до 35 баллов)</li>
+                                    <li>Модуль 2 (до 35 баллов)</li>
+                                </ul>
+                                Максимум: 100 баллов. Для зачета необходимо набрать минимум 60 баллов.
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Question 2 -->
+                    <div class="accordion-item border-0 mb-2">
+                        <h2 class="accordion-header">
+                            <button class="accordion-button collapsed" type="button" 
+                                    data-bs-toggle="collapse" data-bs-target="#faq2">
+                                Как начисляются баллы за посещаемость?
+                            </button>
+                        </h2>
+                        <div id="faq2" class="accordion-collapse collapse" data-bs-parent="#faqAccordion">
+                            <div class="accordion-body text-muted">
+                                Баллы за посещаемость начисляются пропорционально проценту посещенных занятий:
+                                <ul class="mt-2 mb-0">
+                                    <li>90-100% посещенных занятий = 27-30 баллов</li>
+                                    <li>75-89% = 22-27 баллов</li>
+                                    <li>60-74% = 18-22 баллов</li>
+                                    <li>Менее 60% = менее 18 баллов</li>
+                                </ul>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Question 3 -->
+                    <div class="accordion-item border-0 mb-2">
+                        <h2 class="accordion-header">
+                            <button class="accordion-button collapsed" type="button" 
+                                    data-bs-toggle="collapse" data-bs-target="#faq3">
+                                Учитываются ли уважительные причины пропуска?
+                            </button>
+                        </h2>
+                        <div id="faq3" class="accordion-collapse collapse" data-bs-parent="#faqAccordion">
+                            <div class="accordion-body text-muted">
+                                Да, преподаватель может отметить пропуск как "уважительная причина". 
+                                Такие пропуски не учитываются при расчете процента посещаемости.
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Question 4 -->
+                    <div class="accordion-item border-0 mb-2">
+                        <h2 class="accordion-header">
+                            <button class="accordion-button collapsed" type="button" 
+                                    data-bs-toggle="collapse" data-bs-target="#faq4">
+                                Можно ли пересдать норматив?
+                            </button>
+                        </h2>
+                        <div id="faq4" class="accordion-collapse collapse" data-bs-parent="#faqAccordion">
+                            <div class="accordion-body text-muted">
+                                Да, студент может пересдать норматив. Преподаватель внесет новый результат,
+                                который заменит предыдущий. В системе сохраняется история всех попыток.
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Question 5 -->
+                    <div class="accordion-item border-0">
+                        <h2 class="accordion-header">
+                            <button class="accordion-button collapsed" type="button" 
+                                    data-bs-toggle="collapse" data-bs-target="#faq5">
+                                Как получить доступ к системе?
+                            </button>
+                        </h2>
+                        <div id="faq5" class="accordion-collapse collapse" data-bs-parent="#faqAccordion">
+                            <div class="accordion-body text-muted">
+                                Для получения доступа обратитесь к администратору системы:
+                                <ul class="mt-2 mb-0">
+                                    <li>Email: support@muiv.ru</li>
+                                    <li>Телефон: +7 (495) 123-45-67</li>
+                                </ul>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Contact -->
+<div class="row">
+    <div class="col-lg-8 mx-auto">
+        <div class="card border-0 shadow-sm">
+            <div class="card-body p-4 text-center">
+                <h5 class="mb-3">
+                    <i class="bi bi-envelope text-primary me-2"></i>
+                    Не нашли ответ на свой вопрос?
+                </h5>
+                <p class="text-muted mb-3">
+                    Свяжитесь с нами, и мы поможем вам!
+                </p>
+                <div class="d-grid gap-2 d-sm-flex justify-content-sm-center">
+                    <a href="mailto:support@muiv.ru" class="btn btn-primary">
+                        <i class="bi bi-envelope me-2"></i>
+                        Написать в поддержку
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_css %}
+<style>
+.hover-card {
+    transition: all 0.3s ease;
+}
+
+.hover-card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 8px 20px rgba(0,0,0,0.15) !important;
+}
+
+.accordion-button:not(.collapsed) {
+    background-color: #e7f1ff;
+    color: #0d6efd;
+}
+</style>
+{% endblock %}

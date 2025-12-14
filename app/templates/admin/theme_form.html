@@ -1,0 +1,136 @@
+{% extends "base.html" %}
+
+{% block title %}{{ 'Редактировать тему' if theme else 'Создать тему' }}{% endblock %}
+
+{% block content %}
+<!-- Header -->
+<div class="row mb-4">
+    <div class="col">
+        <nav aria-label="breadcrumb">
+            <ol class="breadcrumb">
+                <li class="breadcrumb-item">
+                    <a href="{{ url_for('admin.dashboard') }}">Админ-панель</a>
+                </li>
+                <li class="breadcrumb-item">
+                    <a href="{{ url_for('admin.modules') }}">Модули и темы</a>
+                </li>
+                <li class="breadcrumb-item active">
+                    {{ 'Редактировать тему' if theme else 'Создать тему' }}
+                </li>
+            </ol>
+        </nav>
+        
+        <h2>
+            <i class="bi bi-{{ 'pencil' if theme else 'plus-circle' }} text-success me-2"></i>
+            {{ 'Редактировать тему' if theme else 'Создать тему' }}
+        </h2>
+    </div>
+</div>
+
+<!-- Info Alert -->
+{% if not theme %}
+<div class="alert alert-info mb-4">
+    <i class="bi bi-info-circle me-2"></i>
+    <strong>Тема</strong> - это раздел внутри модуля (например, "Легкая атлетика", "Баскетбол").
+    В каждой теме будут нормативы (упражнения).
+</div>
+{% endif %}
+
+<!-- No modules warning -->
+{% if modules|length == 0 %}
+<div class="alert alert-warning">
+    <i class="bi bi-exclamation-triangle me-2"></i>
+    <strong>Нет модулей!</strong> Сначала создайте хотя бы один модуль.
+    <a href="{{ url_for('admin.create_module') }}" class="alert-link">Создать модуль</a>
+</div>
+{% endif %}
+
+<!-- Form -->
+<div class="row">
+    <div class="col-lg-8 mx-auto">
+        <div class="card border-0 shadow-sm">
+            <div class="card-body p-4">
+                <form method="POST" action="{{ url_for('admin.edit_theme', theme_id=theme.id) if theme else url_for('admin.create_theme') }}">
+                    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                    
+                    <!-- Модуль -->
+                    <div class="mb-3">
+                        <label for="module_id" class="form-label">
+                            Модуль <span class="text-danger">*</span>
+                        </label>
+                        <select class="form-select" 
+                                id="module_id" 
+                                name="module_id" 
+                                required
+                                {% if modules|length == 0 %}disabled{% endif %}>
+                            <option value="">Выберите модуль</option>
+                            {% for module in modules %}
+                            <option value="{{ module.id }}" 
+                                    {% if theme and theme.module_id == module.id %}selected{% endif %}>
+                                Модуль {{ module.number }}: {{ module.name }} (макс. {{ module.max_points }} баллов)
+                            </option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                    
+                    <!-- Название -->
+                    <div class="mb-3">
+                        <label for="name" class="form-label">
+                            Название темы <span class="text-danger">*</span>
+                        </label>
+                        <input type="text" 
+                               class="form-control" 
+                               id="name" 
+                               name="name" 
+                               value="{{ theme.name if theme else '' }}" 
+                               placeholder="Легкая атлетика"
+                               required>
+                    </div>
+                    
+                    <!-- Максимум баллов -->
+                    <div class="mb-3">
+                        <label for="max_points" class="form-label">
+                            Максимум баллов за тему <span class="text-danger">*</span>
+                        </label>
+                        <input type="number" 
+                               class="form-control" 
+                               id="max_points" 
+                               name="max_points" 
+                               min="1" 
+                               max="50" 
+                               value="{{ theme.max_points if theme else 35 }}" 
+                               required>
+                        <small class="text-muted">Сумма баллов всех нормативов в теме не должна превышать это значение</small>
+                    </div>
+                    
+                    <!-- Разделитель -->
+                    <hr class="my-4">
+                    
+                    <!-- Кнопки -->
+                    <div class="d-flex justify-content-between">
+                        <a href="{{ url_for('admin.modules') }}" class="btn btn-secondary">
+                            <i class="bi bi-arrow-left me-1"></i>
+                            Отмена
+                        </a>
+                        
+                        <button type="submit" 
+                                class="btn btn-success"
+                                {% if modules|length == 0 %}disabled{% endif %}>
+                            <i class="bi bi-{{ 'check-circle' if theme else 'plus-circle' }} me-1"></i>
+                            {{ 'Сохранить' if theme else 'Создать' }}
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+        
+        <!-- Подсказка после создания -->
+        {% if not theme and modules|length > 0 %}
+        <div class="alert alert-light mt-3">
+            <i class="bi bi-lightbulb me-2"></i>
+            <strong>Следующий шаг:</strong> После создания темы добавьте в неё нормативы (упражнения).
+        </div>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}

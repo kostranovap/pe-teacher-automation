@@ -1,0 +1,171 @@
+{% extends "base.html" %}
+
+{% block title %}Результаты - {{ student.full_name }}{% endblock %}
+
+{% block content %}
+<!-- Header -->
+<div class="row mb-4">
+    <div class="col">
+        <nav aria-label="breadcrumb">
+            <ol class="breadcrumb">
+                <li class="breadcrumb-item">
+                    <a href="{{ url_for('teacher.dashboard') }}">Главная</a>
+                </li>
+                <li class="breadcrumb-item">
+                    <a href="{{ url_for('teacher.groups') }}">Группы</a>
+                </li>
+                <li class="breadcrumb-item">
+                    <a href="{{ url_for('teacher.group_details', group_id=student.group_id) }}">{{ student.group.name }}</a>
+                </li>
+                <li class="breadcrumb-item active">Результаты студента</li>
+            </ol>
+        </nav>
+        
+        <div class="d-flex justify-content-between align-items-center">
+            <div>
+                <h2 class="mb-1">
+                    <i class="bi bi-clipboard-data text-primary me-2"></i>
+                    Результаты студента
+                </h2>
+                <p class="text-muted mb-0">{{ student.full_name }}</p>
+            </div>
+            <div class="text-end">
+                <p class="mb-1"><span class="badge bg-secondary">{{ student.student_number }}</span></p>
+                <p class="text-muted small mb-0">
+                    {{ student.gender|replace('male', 'Мужской')|replace('female', 'Женский') }} | 
+                    Мед.группа: {{ student.medical_group }}
+                </p>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Student Info Card -->
+<div class="row mb-4">
+    <div class="col-md-12">
+        <div class="card border-0 shadow-sm">
+            <div class="card-body">
+                <div class="row">
+                    <div class="col-md-3 text-center">
+                        <div class="avatar bg-primary text-white rounded-circle mx-auto d-flex align-items-center justify-content-center mb-2" 
+                             style="width: 80px; height: 80px; font-size: 2rem;">
+                            {{ student.full_name[0] }}
+                        </div>
+                        <h5 class="mb-0">{{ student.full_name }}</h5>
+                    </div>
+                    <div class="col-md-9">
+                        <div class="row">
+                            <div class="col-md-3">
+                                <p class="text-muted small mb-1">Группа</p>
+                                <p class="fw-bold mb-0">{{ student.group.name }}</p>
+                            </div>
+                            <div class="col-md-3">
+                                <p class="text-muted small mb-1">Курс</p>
+                                <p class="fw-bold mb-0">{{ student.group.course }}</p>
+                            </div>
+                            <div class="col-md-3">
+                                <p class="text-muted small mb-1">Посещаемость</p>
+                                <p class="fw-bold mb-0">
+                                    <span class="badge bg-{{ student.get_attendance_percentage()|rating_badge }}">
+                                        {{ student.get_attendance_percentage()|round(1) }}%
+                                    </span>
+                                </p>
+                            </div>
+                            <div class="col-md-3">
+                                <p class="text-muted small mb-1">Всего результатов</p>
+                                <p class="fw-bold mb-0">{{ student.standard_results.count() }}</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Results by Modules -->
+{% if results_by_module %}
+    {% for module_name, themes in results_by_module.items() %}
+    <div class="card border-0 shadow-sm mb-3">
+        <div class="card-header bg-primary text-white">
+            <h5 class="mb-0">
+                <i class="bi bi-collection me-2"></i>
+                {{ module_name }}
+            </h5>
+        </div>
+        <div class="card-body">
+            {% for theme_name, results in themes.items() %}
+            <div class="mb-4">
+                <h6 class="border-bottom pb-2 mb-3">
+                    <i class="bi bi-bookmark text-success me-2"></i>
+                    {{ theme_name }}
+                </h6>
+                
+                <div class="table-responsive">
+                    <table class="table table-sm table-hover mb-0">
+                        <thead class="table-light">
+                            <tr>
+                                <th>Норматив</th>
+                                <th class="text-center">Результат</th>
+                                <th class="text-center">Баллы</th>
+                                <th class="text-center">Попытка</th>
+                                <th class="text-center">Дата</th>
+                                <th class="text-center">Преподаватель</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for result in results %}
+                            <tr>
+                                <td>{{ result.standard.name }}</td>
+                                <td class="text-center">
+                                    <strong>{{ result.result_value }} {{ result.standard.unit }}</strong>
+                                </td>
+                                <td class="text-center">
+                                    <span class="badge bg-{{ result.points|rating_badge }}">
+                                        {{ result.points }}
+                                    </span>
+                                </td>
+                                <td class="text-center">
+                                    <span class="badge bg-secondary">#{{ result.attempt_number }}</span>
+                                </td>
+                                <td class="text-center">
+                                    {{ result.date|format_date }}
+                                </td>
+                                <td class="text-center">
+                                    <small class="text-muted">{{ result.creator.full_name if result.creator else '-' }}</small>
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+    {% endfor %}
+{% else %}
+<div class="alert alert-info">
+    <i class="bi bi-info-circle me-2"></i>
+    У студента пока нет результатов по нормативам.
+</div>
+{% endif %}
+
+<!-- Back Button -->
+<div class="row mt-4">
+    <div class="col">
+        <a href="{{ url_for('teacher.group_details', group_id=student.group_id) }}" class="btn btn-secondary">
+            <i class="bi bi-arrow-left me-1"></i>
+            Вернуться к группе
+        </a>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_css %}
+<style>
+.avatar {
+    font-weight: 600;
+}
+</style>
+{% endblock %}
