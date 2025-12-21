@@ -1,0 +1,144 @@
+{% extends "base.html" %}
+
+{% block title %}Посещаемость - {{ student.full_name }}{% endblock %}
+
+{% block content %}
+<div class="container-fluid py-4">
+    <nav aria-label="breadcrumb" class="mb-4">
+        <ol class="breadcrumb">
+            <li class="breadcrumb-item"><a href="{{ url_for('student.search') }}">Поиск</a></li>
+            <li class="breadcrumb-item"><a href="{{ url_for('student.profile', student_id=student.id) }}">{{ student.full_name }}</a></li>
+            <li class="breadcrumb-item active">Посещаемость</li>
+        </ol>
+    </nav>
+
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h2><i class="bi bi-calendar-check me-2"></i>Посещаемость</h2>
+        <a href="{{ url_for('student.profile', student_id=student.id) }}" class="btn btn-outline-secondary">
+            <i class="bi bi-arrow-left me-1"></i>Назад к профилю
+        </a>
+    </div>
+
+    <!-- Статистика -->
+    <div class="row mb-4">
+        <div class="col-lg-3 col-md-6 mb-3">
+            <div class="card border-primary">
+                <div class="card-body text-center">
+                    <i class="bi bi-calendar3 text-primary fs-1"></i>
+                    <h3 class="mt-2">{{ stats.total }}</h3>
+                    <p class="text-muted mb-0">Всего занятий</p>
+                </div>
+            </div>
+        </div>
+        <div class="col-lg-3 col-md-6 mb-3">
+            <div class="card border-success">
+                <div class="card-body text-center">
+                    <i class="bi bi-check-circle text-success fs-1"></i>
+                    <h3 class="mt-2">{{ stats.present }}</h3>
+                    <p class="text-muted mb-0">Присутствовал</p>
+                </div>
+            </div>
+        </div>
+        <div class="col-lg-3 col-md-6 mb-3">
+            <div class="card border-danger">
+                <div class="card-body text-center">
+                    <i class="bi bi-x-circle text-danger fs-1"></i>
+                    <h3 class="mt-2">{{ stats.absent }}</h3>
+                    <p class="text-muted mb-0">Отсутствовал</p>
+                </div>
+            </div>
+        </div>
+        <div class="col-lg-3 col-md-6 mb-3">
+            <div class="card border-warning">
+                <div class="card-body text-center">
+                    <i class="bi bi-exclamation-triangle text-warning fs-1"></i>
+                    <h3 class="mt-2">{{ stats.excused }}</h3>
+                    <p class="text-muted mb-0">Уважительная</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Процент посещаемости -->
+    <div class="card shadow-sm mb-4">
+        <div class="card-body">
+            <h5 class="mb-3">Процент посещаемости: <strong>{{ stats.percentage }}%</strong></h5>
+            <div class="progress" style="height: 30px;">
+                <div class="progress-bar bg-{{ 'success' if stats.percentage >= 80 else ('warning' if stats.percentage >= 60 else 'danger') }}" 
+                     style="width: {{ stats.percentage }}%;">
+                    {{ stats.percentage }}%
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Фильтры -->
+    <div class="card shadow-sm mb-4">
+        <div class="card-body">
+            <form method="GET" class="row g-3">
+                <div class="col-md-4">
+                    <label for="date_from" class="form-label">Дата от</label>
+                    <input type="date" class="form-control" id="date_from" name="date_from" value="{{ date_from }}">
+                </div>
+                <div class="col-md-4">
+                    <label for="date_to" class="form-label">Дата до</label>
+                    <input type="date" class="form-control" id="date_to" name="date_to" value="{{ date_to }}">
+                </div>
+                <div class="col-md-4 d-flex align-items-end">
+                    <button type="submit" class="btn btn-primary me-2">
+                        <i class="bi bi-filter me-1"></i>Применить
+                    </button>
+                    <a href="{{ url_for('student.attendance', student_id=student.id) }}" class="btn btn-outline-secondary">
+                        Сбросить
+                    </a>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Таблица посещаемости -->
+    <div class="card shadow-sm">
+        <div class="card-header bg-white">
+            <h5 class="mb-0">Журнал посещений</h5>
+        </div>
+        <div class="card-body p-0">
+            {% if records %}
+            <div class="table-responsive">
+                <table class="table table-hover mb-0">
+                    <thead class="table-light">
+                        <tr>
+                            <th style="width: 50px;">#</th>
+                            <th>Дата занятия</th>
+                            <th>Статус</th>
+                            <th>Примечание</th>
+                            <th>Отметил</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for record in records %}
+                        <tr>
+                            <td>{{ loop.index }}</td>
+                            <td>{{ record.date.strftime('%d.%m.%Y (%A)') }}</td>
+                            <td>
+                                <span class="badge bg-{{ 'success' if record.status == 'присутствовал' else ('warning' if record.status == 'уважительная' else 'danger') }}">
+                                    <i class="bi bi-{{ 'check' if record.status == 'присутствовал' else ('exclamation' if record.status == 'уважительная' else 'x') }}-circle me-1"></i>
+                                    {{ record.status|capitalize }}
+                                </span>
+                            </td>
+                            <td>{{ record.notes or '—' }}</td>
+                            <td class="text-muted small">{{ record.creator.full_name if record.creator else '—' }}</td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+            {% else %}
+            <div class="text-center py-5 text-muted">
+                <i class="bi bi-calendar-x fs-1 mb-3"></i>
+                <p>Нет записей о посещаемости за выбранный период</p>
+            </div>
+            {% endif %}
+        </div>
+    </div>
+</div>
+{% endblock %}

@@ -197,7 +197,8 @@ def register_context_processors(app):
             app_name='Система автоматизации преподавателя физической культуры',
             app_short_name='PE System',
             app_version='1.0.0',
-            university_name='Московский университет им. С.Ю. Витте'
+            university_name='Московский университет им. С.Ю. Витте',
+            developer='Разработчик: Костарнова Полина Андреевна' 
         )
     
     @app.context_processor

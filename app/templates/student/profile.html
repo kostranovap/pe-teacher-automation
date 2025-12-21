@@ -1,0 +1,396 @@
+{% extends "base.html" %}
+
+{% block title %}{{ student.full_name }} - Профиль студента{% endblock %}
+
+{% block content %}
+<div class="container-fluid py-4">
+    <!-- Навигация -->
+    <nav aria-label="breadcrumb" class="mb-4">
+        <ol class="breadcrumb">
+            <li class="breadcrumb-item"><a href="{{ url_for('student.search') }}">Поиск</a></li>
+            <li class="breadcrumb-item active">{{ student.full_name }}</li>
+        </ol>
+    </nav>
+
+    <!-- Заголовок и основная информация -->
+    <div class="row mb-4">
+        <div class="col-lg-8">
+            <div class="card shadow-sm border-0">
+                <div class="card-body p-4">
+                    <div class="d-flex align-items-start">
+                        <!-- Аватар -->
+                        <div class="avatar-large bg-primary text-white me-4">
+                            <span class="fs-1">{{ student.full_name.split()[0][0] }}{{ student.full_name.split()[1][0] if student.full_name.split()|length > 1 else '' }}</span>
+                        </div>
+
+                        <!-- Информация -->
+                        <div class="flex-grow-1">
+                            <h2 class="mb-3">{{ student.full_name }}</h2>
+                            
+                            <div class="row">
+                                <div class="col-md-6 mb-3">
+                                    <div class="info-item">
+                                        <i class="bi bi-credit-card text-muted me-2"></i>
+                                        <strong>Студ. билет:</strong> {{ student.student_number }}
+                                    </div>
+                                </div>
+                                <div class="col-md-6 mb-3">
+                                    <div class="info-item">
+                                        <i class="bi bi-{{ 'person' if student.gender == 'M' else 'person-dress' }} text-muted me-2"></i>
+                                        <strong>Пол:</strong> {{ 'Мужской' if student.gender == 'M' else 'Женский' }}
+                                    </div>
+                                </div>
+                                <div class="col-md-6 mb-3">
+                                    <div class="info-item">
+                                        <i class="bi bi-calendar text-muted me-2"></i>
+                                        <strong>Дата рождения:</strong> {{ student.birth_date.strftime('%d.%m.%Y') }}
+                                    </div>
+                                </div>
+                                <div class="col-md-6 mb-3">
+                                    <div class="info-item">
+                                        <i class="bi bi-people text-muted me-2"></i>
+                                        <strong>Группа:</strong> {{ student.group.name }}
+                                    </div>
+                                </div>
+                                <div class="col-md-6 mb-3">
+                                    <div class="info-item">
+                                        <i class="bi bi-book text-muted me-2"></i>
+                                        <strong>Курс / Семестр:</strong> {{ student.group.course }} / {{ student.group.semester }}
+                                    </div>
+                                </div>
+                                <div class="col-md-6 mb-3">
+                                    <div class="info-item">
+                                        <i class="bi bi-heart-pulse text-muted me-2"></i>
+                                        <strong>Мед. группа:</strong>
+                                        <span class="badge bg-{{ 'success' if student.medical_group == 'основная' else ('info' if student.medical_group == 'подготовительная' else 'warning') }}">
+                                            {{ student.medical_group|capitalize }}
+                                        </span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Рейтинг -->
+        <div class="col-lg-4">
+            <div class="card shadow-sm border-0 mb-3">
+                <div class="card-body text-center p-4">
+                    <h3 class="text-muted mb-2">Итоговый рейтинг</h3>
+                    <div class="display-3 fw-bold mb-2" style="color: {{ 'green' if rating.passed else 'red' }};">
+                        {{ rating.total }}
+                    </div>
+                    <p class="text-muted mb-3">из 100 баллов</p>
+                    <span class="badge bg-{{ 'success' if rating.grade == 'Отлично' else ('primary' if rating.grade == 'Хорошо' else ('warning' if rating.grade == 'Удовлетворительно' else 'danger')) }} fs-5 px-4 py-2">
+                        {{ rating.grade }}
+                    </span>
+                </div>
+            </div>
+
+            <div class="card shadow-sm border-0">
+                <div class="card-body text-center p-4">
+                    <h6 class="text-muted mb-3">Посещаемость</h6>
+                    <div class="progress mb-2" style="height: 25px;">
+                        <div class="progress-bar bg-{{ 'success' if attendance_pct >= 80 else ('warning' if attendance_pct >= 60 else 'danger') }}" 
+                             style="width: {{ attendance_pct }}%;">
+                            {{ attendance_pct }}%
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Быстрые ссылки -->
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="d-flex gap-2 flex-wrap">
+                <a href="{{ url_for('student.attendance', student_id=student.id) }}" class="btn btn-outline-primary">
+                    <i class="bi bi-calendar-check me-1"></i>Посещаемость
+                </a>
+                <a href="{{ url_for('student.results', student_id=student.id) }}" class="btn btn-outline-success">
+                    <i class="bi bi-trophy me-1"></i>Результаты нормативов
+                </a>
+                <a href="{{ url_for('student.assignments', student_id=student.id) }}" class="btn btn-outline-info">
+                    <i class="bi bi-list-task me-1"></i>Индивидуальные задания
+                </a>
+                <a href="{{ url_for('student.rating_details', student_id=student.id) }}" class="btn btn-outline-warning">
+                    <i class="bi bi-bar-chart me-1"></i>Детальный рейтинг
+                </a>
+                <a href="{{ url_for('student.print_profile', student_id=student.id) }}" class="btn btn-outline-secondary" target="_blank">
+                    <i class="bi bi-printer me-1"></i>Версия для печати
+                </a>
+            </div>
+        </div>
+    </div>
+
+    <!-- Детализация баллов -->
+    <div class="row mb-4">
+        <div class="col-lg-3 col-md-6 mb-3">
+            <div class="card border-info h-100">
+                <div class="card-body text-center">
+                    <i class="bi bi-calendar-check text-info fs-1"></i>
+                    <h4 class="mt-2">{{ rating.attendance }}</h4>
+                    <p class="text-muted mb-0 small">Посещаемость<br>(макс. 30)</p>
+                </div>
+            </div>
+        </div>
+        <div class="col-lg-3 col-md-6 mb-3">
+            <div class="card border-primary h-100">
+                <div class="card-body text-center">
+                    <i class="bi bi-1-circle text-primary fs-1"></i>
+                    <h4 class="mt-2">{{ rating.module1 }}</h4>
+                    <p class="text-muted mb-0 small">Модуль 1<br>(макс. 35)</p>
+                </div>
+            </div>
+        </div>
+        <div class="col-lg-3 col-md-6 mb-3">
+            <div class="card border-primary h-100">
+                <div class="card-body text-center">
+                    <i class="bi bi-2-circle text-primary fs-1"></i>
+                    <h4 class="mt-2">{{ rating.module2 }}</h4>
+                    <p class="text-muted mb-0 small">Модуль 2<br>(макс. 35)</p>
+                </div>
+            </div>
+        </div>
+        <div class="col-lg-3 col-md-6 mb-3">
+            <div class="card border-warning h-100">
+                <div class="card-body text-center">
+                    <i class="bi bi-star text-warning fs-1"></i>
+                    <h4 class="mt-2">{{ rating.bonus }}</h4>
+                    <p class="text-muted mb-0 small">Бонусные<br>баллы</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Табы -->
+    <ul class="nav nav-tabs mb-4" id="profileTabs" role="tablist">
+        <li class="nav-item" role="presentation">
+            <button class="nav-link active" id="attendance-tab" data-bs-toggle="tab" data-bs-target="#attendance" type="button">
+                <i class="bi bi-calendar-check me-2"></i>Последние занятия
+            </button>
+        </li>
+        <li class="nav-item" role="presentation">
+            <button class="nav-link" id="results-tab" data-bs-toggle="tab" data-bs-target="#results" type="button">
+                <i class="bi bi-trophy me-2"></i>Результаты нормативов
+            </button>
+        </li>
+        <li class="nav-item" role="presentation">
+            <button class="nav-link" id="assignments-tab" data-bs-toggle="tab" data-bs-target="#assignments" type="button">
+                <i class="bi bi-list-task me-2"></i>Индивидуальные задания
+            </button>
+        </li>
+    </ul>
+
+    <div class="tab-content" id="profileTabContent">
+        <!-- Посещаемость -->
+        <div class="tab-pane fade show active" id="attendance" role="tabpanel">
+            <div class="card shadow-sm">
+                <div class="card-header bg-white">
+                    <h5 class="mb-0">Последние 10 занятий</h5>
+                </div>
+                <div class="card-body p-0">
+                    {% if recent_attendance %}
+                    <div class="table-responsive">
+                        <table class="table table-hover mb-0">
+                            <thead class="table-light">
+                                <tr>
+                                    <th>Дата</th>
+                                    <th>Статус</th>
+                                    <th>Примечание</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for record in recent_attendance %}
+                                <tr>
+                                    <td>{{ record.date.strftime('%d.%m.%Y') }}</td>
+                                    <td>
+                                        <span class="badge bg-{{ 'success' if record.status == 'присутствовал' else ('warning' if record.status == 'уважительная' else 'danger') }}">
+                                            {{ record.status|capitalize }}
+                                        </span>
+                                    </td>
+                                    <td>{{ record.notes or '—' }}</td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                    {% else %}
+                    <div class="text-center py-5 text-muted">
+                        <i class="bi bi-calendar-x fs-1 mb-3"></i>
+                        <p>Нет записей о посещаемости</p>
+                    </div>
+                    {% endif %}
+                </div>
+                <div class="card-footer bg-white text-center">
+                    <a href="{{ url_for('student.attendance', student_id=student.id) }}" class="btn btn-sm btn-outline-primary">
+                        Смотреть всю посещаемость
+                    </a>
+                </div>
+            </div>
+        </div>
+
+        <!-- Результаты -->
+        <div class="tab-pane fade" id="results" role="tabpanel">
+            <div class="card shadow-sm">
+                <div class="card-header bg-white">
+                    <h5 class="mb-0">Результаты по темам</h5>
+                </div>
+                <div class="card-body">
+                    {% if results_by_theme %}
+                        {% for theme_name, theme_results in results_by_theme.items() %}
+                        <h6 class="text-primary mb-3">{{ theme_name }}</h6>
+                        <div class="table-responsive mb-4">
+                            <table class="table table-sm table-hover">
+                                <thead class="table-light">
+                                    <tr>
+                                        <th>Норматив</th>
+                                        <th>Результат</th>
+                                        <th>Баллы</th>
+                                        <th>Дата</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {% for result in theme_results %}
+                                    <tr>
+                                        <td>{{ result.standard.name }}</td>
+                                        <td><strong>{{ result.result_value }}</strong> {{ result.standard.unit }}</td>
+                                        <td>
+                                            <span class="badge bg-{{ 'success' if result.points >= 4 else ('primary' if result.points == 3 else 'warning') }}">
+                                                {{ result.points }} из 5
+                                            </span>
+                                        </td>
+                                        <td>{{ result.date.strftime('%d.%m.%Y') }}</td>
+                                    </tr>
+                                    {% endfor %}
+                                </tbody>
+                            </table>
+                        </div>
+                        {% endfor %}
+                    {% else %}
+                    <div class="text-center py-5 text-muted">
+                        <i class="bi bi-trophy fs-1 mb-3"></i>
+                        <p>Нет результатов нормативов</p>
+                    </div>
+                    {% endif %}
+                </div>
+                <div class="card-footer bg-white text-center">
+                    <a href="{{ url_for('student.results', student_id=student.id) }}" class="btn btn-sm btn-outline-success">
+                        Смотреть все результаты
+                    </a>
+                </div>
+            </div>
+        </div>
+
+        <!-- Задания -->
+        <div class="tab-pane fade" id="assignments" role="tabpanel">
+            <div class="row">
+                <!-- Активные -->
+                <div class="col-lg-6 mb-3">
+                    <div class="card shadow-sm h-100">
+                        <div class="card-header bg-info text-white">
+                            <h6 class="mb-0">
+                                <i class="bi bi-hourglass-split me-2"></i>
+                                Активные задания ({{ active_assignments|length }})
+                            </h6>
+                        </div>
+                        <div class="card-body">
+                            {% if active_assignments %}
+                            <ul class="list-group list-group-flush">
+                                {% for assignment in active_assignments %}
+                                <li class="list-group-item px-0">
+                                    <div class="d-flex justify-content-between">
+                                        <div>
+                                            <strong>{{ assignment.title }}</strong>
+                                            <p class="mb-1 small text-muted">{{ assignment.description|truncate(50) }}</p>
+                                            <span class="badge bg-warning">
+                                                <i class="bi bi-clock me-1"></i>
+                                                до {{ assignment.deadline.strftime('%d.%m.%Y') }}
+                                            </span>
+                                        </div>
+                                        <div>
+                                            <span class="badge bg-success">+{{ assignment.bonus_points }}</span>
+                                        </div>
+                                    </div>
+                                </li>
+                                {% endfor %}
+                            </ul>
+                            {% else %}
+                            <p class="text-muted text-center">Нет активных заданий</p>
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Выполненные -->
+                <div class="col-lg-6 mb-3">
+                    <div class="card shadow-sm h-100">
+                        <div class="card-header bg-success text-white">
+                            <h6 class="mb-0">
+                                <i class="bi bi-check-circle me-2"></i>
+                                Выполненные ({{ completed_assignments|length }})
+                            </h6>
+                        </div>
+                        <div class="card-body">
+                            {% if completed_assignments %}
+                            <ul class="list-group list-group-flush">
+                                {% for assignment in completed_assignments %}
+                                <li class="list-group-item px-0">
+                                    <div class="d-flex justify-content-between">
+                                        <div>
+                                            <strong>{{ assignment.title }}</strong>
+                                            <p class="mb-1 small text-muted">
+                                                Выполнено: {{ assignment.completion_date.strftime('%d.%m.%Y') }}
+                                            </p>
+                                        </div>
+                                        <div>
+                                            <span class="badge bg-success">+{{ assignment.bonus_points }}</span>
+                                        </div>
+                                    </div>
+                                </li>
+                                {% endfor %}
+                            </ul>
+                            {% else %}
+                            <p class="text-muted text-center">Нет выполненных заданий</p>
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="text-center mt-3">
+                <a href="{{ url_for('student.assignments', student_id=student.id) }}" class="btn btn-sm btn-outline-info">
+                    Смотреть все задания
+                </a>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+    .avatar-large {
+        width: 100px;
+        height: 100px;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-weight: bold;
+        flex-shrink: 0;
+    }
+    
+    .info-item {
+        padding: 8px 0;
+    }
+    
+    .card {
+        border-radius: 12px;
+    }
+    
+    .nav-tabs .nav-link {
+        border-radius: 8px 8px 0 0;
+    }
+</style>
+{% endblock %}

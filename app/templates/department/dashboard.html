@@ -1,0 +1,228 @@
+{% extends "base.html" %}
+
+{% block title %}Панель заведующего кафедрой{% endblock %}
+
+{% block content %}
+<div class="container-fluid py-4">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h2><i class="bi bi-speedometer2 me-2"></i>Панель заведующего кафедрой</h2>
+    </div>
+
+    <!-- Общая статистика -->
+    <div class="row mb-4">
+        <div class="col-lg-3 col-md-6 mb-3">
+            <div class="card border-primary h-100">
+                <div class="card-body text-center">
+                    <i class="bi bi-people text-primary fs-1"></i>
+                    <h3 class="mt-2">{{ stats.total_students }}</h3>
+                    <p class="text-muted mb-0">Всего студентов</p>
+                </div>
+            </div>
+        </div>
+        <div class="col-lg-3 col-md-6 mb-3">
+            <div class="card border-info h-100">
+                <div class="card-body text-center">
+                    <i class="bi bi-collection text-info fs-1"></i>
+                    <h3 class="mt-2">{{ stats.total_groups }}</h3>
+                    <p class="text-muted mb-0">Групп</p>
+                </div>
+            </div>
+        </div>
+        <div class="col-lg-3 col-md-6 mb-3">
+            <div class="card border-success h-100">
+                <div class="card-body text-center">
+                    <i class="bi bi-person-badge text-success fs-1"></i>
+                    <h3 class="mt-2">{{ stats.total_teachers }}</h3>
+                    <p class="text-muted mb-0">Преподавателей</p>
+                </div>
+            </div>
+        </div>
+        <div class="col-lg-3 col-md-6 mb-3">
+            <div class="card border-warning h-100">
+                <div class="card-body text-center">
+                    <i class="bi bi-clipboard-check text-warning fs-1"></i>
+                    <h3 class="mt-2">{{ stats.avg_attendance }}%</h3>
+                    <p class="text-muted mb-0">Средняя посещаемость</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Успеваемость -->
+    <div class="row mb-4">
+        <div class="col-lg-4 col-md-6 mb-3">
+            <div class="card h-100">
+                <div class="card-body text-center">
+                    <h6 class="text-muted mb-3">Средний рейтинг</h6>
+                    <div class="display-4 fw-bold text-primary">{{ stats.avg_rating }}</div>
+                    <p class="text-muted">из 100 баллов</p>
+                </div>
+            </div>
+        </div>
+        <div class="col-lg-4 col-md-6 mb-3">
+            <div class="card h-100 border-success">
+                <div class="card-body text-center">
+                    <h6 class="text-muted mb-3">Получили зачёт</h6>
+                    <div class="display-4 fw-bold text-success">{{ stats.passed_count }}</div>
+                    <p class="text-muted">студентов</p>
+                </div>
+            </div>
+        </div>
+        <div class="col-lg-4 col-md-6 mb-3">
+            <div class="card h-100">
+                <div class="card-body text-center">
+                    <h6 class="text-muted mb-3">Процент сдачи</h6>
+                    <div class="progress mb-3" style="height: 30px;">
+                        <div class="progress-bar bg-{{ 'success' if stats.pass_rate >= 80 else ('warning' if stats.pass_rate >= 60 else 'danger') }}" 
+                             style="width: {{ stats.pass_rate }}%;">
+                            {{ stats.pass_rate }}%
+                        </div>
+                    </div>
+                    <p class="text-muted mb-0">{{ stats.failed_count }} не получили зачёт</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Быстрые ссылки -->
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-header bg-primary text-white">
+                    <h5 class="mb-0"><i class="bi bi-grid me-2"></i>Быстрые действия</h5>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-md-3 mb-3">
+                            <a href="{{ url_for('department.teachers') }}" class="btn btn-outline-primary w-100 py-3">
+                                <i class="bi bi-person-badge fs-3 d-block mb-2"></i>
+                                Преподаватели
+                            </a>
+                        </div>
+                        <div class="col-md-3 mb-3">
+                            <a href="{{ url_for('department.compare_groups') }}" class="btn btn-outline-info w-100 py-3">
+                                <i class="bi bi-bar-chart fs-3 d-block mb-2"></i>
+                                Сравнение групп
+                            </a>
+                        </div>
+                        <div class="col-md-3 mb-3">
+                            <a href="{{ url_for('department.statements') }}" class="btn btn-outline-success w-100 py-3">
+                                <i class="bi bi-file-earmark-text fs-3 d-block mb-2"></i>
+                                Ведомости
+                            </a>
+                        </div>
+                        <div class="col-md-3 mb-3">
+                            <a href="{{ url_for('department.reports') }}" class="btn btn-outline-warning w-100 py-3">
+                                <i class="bi bi-graph-up fs-3 d-block mb-2"></i>
+                                Отчёты
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="row">
+        <!-- Последние ведомости -->
+        <div class="col-lg-6 mb-4">
+            <div class="card shadow-sm">
+                <div class="card-header bg-white">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <h5 class="mb-0"><i class="bi bi-file-earmark-text me-2"></i>Последние ведомости</h5>
+                        <a href="{{ url_for('department.statements') }}" class="btn btn-sm btn-outline-primary">
+                            Все ведомости
+                        </a>
+                    </div>
+                </div>
+                <div class="card-body p-0">
+                    {% if recent_statements %}
+                    <div class="table-responsive">
+                        <table class="table table-hover mb-0">
+                            <thead class="table-light">
+                                <tr>
+                                    <th>Номер</th>
+                                    <th>Группа</th>
+                                    <th>Семестр</th>
+                                    <th>Дата</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for statement in recent_statements %}
+                                <tr>
+                                    <td>
+                                        <a href="{{ url_for('department.statement_details', statement_id=statement.id) }}">
+                                            {{ statement.number }}
+                                        </a>
+                                    </td>
+                                    <td>{{ statement.group.name }}</td>
+                                    <td>{{ statement.semester }}</td>
+                                    <td>{{ statement.date.strftime('%d.%m.%Y') }}</td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                    {% else %}
+                    <div class="text-center py-4 text-muted">
+                        <i class="bi bi-file-earmark-x fs-1 mb-2"></i>
+                        <p>Нет ведомостей</p>
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+
+        <!-- Преподаватели с низкой успеваемостью -->
+        <div class="col-lg-6 mb-4">
+            <div class="card shadow-sm border-warning">
+                <div class="card-header bg-warning text-dark">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <h5 class="mb-0"><i class="bi bi-exclamation-triangle me-2"></i>Требуется внимание</h5>
+                        <a href="{{ url_for('department.teachers') }}" class="btn btn-sm btn-outline-dark">
+                            Все преподаватели
+                        </a>
+                    </div>
+                </div>
+                <div class="card-body p-0">
+                    {% if low_performance_teachers %}
+                    <div class="table-responsive">
+                        <table class="table table-hover mb-0">
+                            <thead class="table-light">
+                                <tr>
+                                    <th>Преподаватель</th>
+                                    <th>Студентов</th>
+                                    <th>% Сдачи</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for item in low_performance_teachers %}
+                                <tr>
+                                    <td>
+                                        <a href="{{ url_for('department.teacher_details', teacher_id=item.teacher.id) }}">
+                                            {{ item.teacher.full_name }}
+                                        </a>
+                                    </td>
+                                    <td>{{ item.students_count }}</td>
+                                    <td>
+                                        <span class="badge bg-{{ 'success' if item.pass_rate >= 80 else ('warning' if item.pass_rate >= 60 else 'danger') }}">
+                                            {{ item.pass_rate }}%
+                                        </span>
+                                    </td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                    {% else %}
+                    <div class="text-center py-4 text-muted">
+                        <i class="bi bi-check-circle fs-1 mb-2 text-success"></i>
+                        <p>Все преподаватели показывают хорошие результаты</p>
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

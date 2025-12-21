@@ -1,0 +1,194 @@
+{% extends "base.html" %}
+
+{% block title %}Индивидуальные задания - {{ student.full_name }}{% endblock %}
+
+{% block content %}
+<div class="container-fluid py-4">
+    <nav aria-label="breadcrumb" class="mb-4">
+        <ol class="breadcrumb">
+            <li class="breadcrumb-item"><a href="{{ url_for('student.search') }}">Поиск</a></li>
+            <li class="breadcrumb-item"><a href="{{ url_for('student.profile', student_id=student.id) }}">{{ student.full_name }}</a></li>
+            <li class="breadcrumb-item active">Индивидуальные задания</li>
+        </ol>
+    </nav>
+
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h2><i class="bi bi-list-task me-2"></i>Индивидуальные задания</h2>
+        <a href="{{ url_for('student.profile', student_id=student.id) }}" class="btn btn-outline-secondary">
+            <i class="bi bi-arrow-left me-1"></i>Назад к профилю
+        </a>
+    </div>
+
+    <!-- Статистика -->
+    <div class="row mb-4">
+        <div class="col-lg-3 col-md-6 mb-3">
+            <div class="card border-primary">
+                <div class="card-body text-center">
+                    <i class="bi bi-list-check text-primary fs-1"></i>
+                    <h3 class="mt-2">{{ stats.total }}</h3>
+                    <p class="text-muted mb-0">Всего заданий</p>
+                </div>
+            </div>
+        </div>
+        <div class="col-lg-3 col-md-6 mb-3">
+            <div class="card border-info">
+                <div class="card-body text-center">
+                    <i class="bi bi-hourglass-split text-info fs-1"></i>
+                    <h3 class="mt-2">{{ stats.active }}</h3>
+                    <p class="text-muted mb-0">Активные</p>
+                </div>
+            </div>
+        </div>
+        <div class="col-lg-3 col-md-6 mb-3">
+            <div class="card border-success">
+                <div class="card-body text-center">
+                    <i class="bi bi-check-circle text-success fs-1"></i>
+                    <h3 class="mt-2">{{ stats.completed }}</h3>
+                    <p class="text-muted mb-0">Выполнено</p>
+                </div>
+            </div>
+        </div>
+        <div class="col-lg-3 col-md-6 mb-3">
+            <div class="card border-warning">
+                <div class="card-body text-center">
+                    <i class="bi bi-star text-warning fs-1"></i>
+                    <h3 class="mt-2">+{{ stats.total_bonus }}</h3>
+                    <p class="text-muted mb-0">Бонусных баллов</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Фильтр -->
+    <div class="mb-4">
+        <div class="btn-group" role="group">
+            <a href="{{ url_for('student.assignments', student_id=student.id) }}" 
+               class="btn btn-outline-primary {{ 'active' if not status_filter }}">
+                Все
+            </a>
+            <a href="{{ url_for('student.assignments', student_id=student.id, status='назначено') }}" 
+               class="btn btn-outline-info {{ 'active' if status_filter == 'назначено' }}">
+                Активные
+            </a>
+            <a href="{{ url_for('student.assignments', student_id=student.id, status='выполнено') }}" 
+               class="btn btn-outline-success {{ 'active' if status_filter == 'выполнено' }}">
+                Выполненные
+            </a>
+            <a href="{{ url_for('student.assignments', student_id=student.id, status='просрочено') }}" 
+               class="btn btn-outline-danger {{ 'active' if status_filter == 'просрочено' }}">
+                Просроченные
+            </a>
+        </div>
+    </div>
+
+    <!-- Активные задания -->
+    {% if active_assignments %}
+    <div class="card shadow-sm mb-4">
+        <div class="card-header bg-info text-white">
+            <h5 class="mb-0"><i class="bi bi-hourglass-split me-2"></i>Активные задания</h5>
+        </div>
+        <div class="card-body">
+            {% for assignment in active_assignments %}
+            <div class="card mb-3 border-{{ 'warning' if (assignment.deadline - now()).days <= 3 else 'info' }}">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between align-items-start mb-2">
+                        <div class="flex-grow-1">
+                            <h5 class="card-title">{{ assignment.title }}</h5>
+                            <span class="badge bg-info">{{ assignment.type|capitalize }}</span>
+                        </div>
+                        <span class="badge bg-success fs-6">+{{ assignment.bonus_points }} баллов</span>
+                    </div>
+                    <p class="card-text">{{ assignment.description }}</p>
+                    <div class="d-flex justify-content-between align-items-center">
+                        <span class="text-muted small">
+                            <i class="bi bi-calendar me-1"></i>
+                            Дедлайн: {{ assignment.deadline.strftime('%d.%m.%Y') }}
+                        </span>
+                        {% set days_left = (assignment.deadline - now()).days %}
+                        {% if days_left <= 3 %}
+                        <span class="badge bg-danger">
+                            <i class="bi bi-exclamation-triangle me-1"></i>
+                            Осталось {{ days_left }} дн.
+                        </span>
+                        {% else %}
+                        <span class="badge bg-secondary">
+                            Осталось {{ days_left }} дн.
+                        </span>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+    {% endif %}
+
+    <!-- Выполненные задания -->
+    {% if completed_assignments %}
+    <div class="card shadow-sm mb-4">
+        <div class="card-header bg-success text-white">
+            <h5 class="mb-0"><i class="bi bi-check-circle me-2"></i>Выполненные задания</h5>
+        </div>
+        <div class="card-body">
+            {% for assignment in completed_assignments %}
+            <div class="card mb-3 border-success">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between align-items-start mb-2">
+                        <div class="flex-grow-1">
+                            <h5 class="card-title">{{ assignment.title }}</h5>
+                            <span class="badge bg-success">Выполнено</span>
+                        </div>
+                        <span class="badge bg-success fs-6">+{{ assignment.bonus_points }} баллов</span>
+                    </div>
+                    <p class="card-text">{{ assignment.description }}</p>
+                    <div class="text-muted small">
+                        <i class="bi bi-check me-1"></i>
+                        Выполнено: {{ assignment.completion_date.strftime('%d.%m.%Y') }}
+                    </div>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+    {% endif %}
+
+    <!-- Просроченные задания -->
+    {% if overdue_assignments %}
+    <div class="card shadow-sm mb-4">
+        <div class="card-header bg-danger text-white">
+            <h5 class="mb-0"><i class="bi bi-x-circle me-2"></i>Просроченные задания</h5>
+        </div>
+        <div class="card-body">
+            {% for assignment in overdue_assignments %}
+            <div class="card mb-3 border-danger">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between align-items-start mb-2">
+                        <div class="flex-grow-1">
+                            <h5 class="card-title">{{ assignment.title }}</h5>
+                            <span class="badge bg-danger">Просрочено</span>
+                        </div>
+                        <span class="badge bg-secondary fs-6">+{{ assignment.bonus_points }} баллов</span>
+                    </div>
+                    <p class="card-text">{{ assignment.description }}</p>
+                    <div class="text-danger small">
+                        <i class="bi bi-exclamation-triangle me-1"></i>
+                        Дедлайн был: {{ assignment.deadline.strftime('%d.%m.%Y') }}
+                    </div>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+    {% endif %}
+
+    <!-- Если нет заданий -->
+    {% if not active_assignments and not completed_assignments and not overdue_assignments %}
+    <div class="card shadow-sm">
+        <div class="card-body text-center py-5 text-muted">
+            <i class="bi bi-list-task fs-1 mb-3"></i>
+            <p>Нет индивидуальных заданий</p>
+        </div>
+    </div>
+    {% endif %}
+</div>
+{% endblock %}

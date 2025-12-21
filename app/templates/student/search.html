@@ -1,0 +1,113 @@
+{% extends "base.html" %}
+
+{% block title %}Поиск студента{% endblock %}
+
+{% block content %}
+<div class="container">
+    <div class="row justify-content-center min-vh-100 align-items-center py-5">
+        <div class="col-lg-6 col-md-8">
+            <!-- Логотип/Заголовок -->
+            <div class="text-center mb-5">
+                <i class="bi bi-search display-1 text-primary mb-3"></i>
+                <h1 class="display-5 fw-bold mb-2">Поиск студента</h1>
+                <p class="text-muted">Введите ФИО или номер студенческого билета</p>
+            </div>
+
+            <!-- Форма поиска -->
+            <div class="card shadow-lg border-0">
+                <div class="card-body p-5">
+                    <form method="POST" action="{{ url_for('student.search') }}">
+                        
+                        
+                        <!-- Поиск по ФИО -->
+                        <div class="mb-4">
+                            <label for="full_name" class="form-label fw-semibold">
+                                <i class="bi bi-person me-2"></i>ФИО студента
+                            </label>
+                            <input type="text" 
+                                   class="form-control form-control-lg" 
+                                   id="full_name" 
+                                   name="full_name" 
+                                   placeholder="Иванов Иван Иванович"
+                                   autofocus>
+                            <div class="form-text">Можно указать часть фамилии или полное ФИО</div>
+                        </div>
+
+                        <!-- Разделитель -->
+                        <div class="text-center my-4">
+                            <span class="text-muted">или</span>
+                        </div>
+
+                        <!-- Поиск по номеру -->
+                        <div class="mb-4">
+                            <label for="student_number" class="form-label fw-semibold">
+                                <i class="bi bi-credit-card me-2"></i>Номер студенческого билета
+                            </label>
+                            <input type="text" 
+                                   class="form-control form-control-lg" 
+                                   id="student_number" 
+                                   name="student_number" 
+                                   placeholder="ГБ123456">
+                            <div class="form-text">Точное совпадение номера</div>
+                        </div>
+
+                        <!-- Кнопка поиска -->
+                        <button type="submit" class="btn btn-primary btn-lg w-100">
+                            <i class="bi bi-search me-2"></i>
+                            Найти студента
+                        </button>
+                        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                    </form>
+                </div>
+            </div>
+
+            <!-- Подсказка -->
+            <div class="card border-0 bg-light mt-4">
+                <div class="card-body">
+                    <h6 class="text-muted mb-3">
+                        <i class="bi bi-info-circle me-2"></i>Как пользоваться поиском:
+                    </h6>
+                    <ul class="text-muted small mb-0">
+                        <li class="mb-2">Введите полное ФИО или часть фамилии для поиска</li>
+                        <li class="mb-2">Номер студенческого билета должен совпадать точно</li>
+                        <li class="mb-2">Если найдено несколько студентов, выберите нужного из списка</li>
+                        <li>После входа в профиль вы увидите все данные: посещаемость, результаты, рейтинг</li>
+                    </ul>
+                </div>
+            </div>
+
+            <!-- Примеры -->
+            <div class="text-center mt-4">
+                <p class="text-muted small mb-2">Примеры поиска:</p>
+                <div class="d-flex gap-2 justify-content-center flex-wrap">
+                    <span class="badge bg-light text-dark border">Иванов</span>
+                    <span class="badge bg-light text-dark border">Петров Петр</span>
+                    <span class="badge bg-light text-dark border">ГБ123001</span>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+    .card {
+        border-radius: 15px;
+        transition: transform 0.2s;
+    }
+    
+    .card:hover {
+        transform: translateY(-5px);
+    }
+    
+    .form-control:focus {
+        border-color: #0d6efd;
+        box-shadow: 0 0 0 0.25rem rgba(13, 110, 253, 0.15);
+    }
+    
+    .btn-primary {
+        padding: 15px;
+        font-size: 1.1rem;
+        border-radius: 10px;
+    }
+</style>
+{% endblock %}

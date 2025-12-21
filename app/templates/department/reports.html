@@ -1,0 +1,59 @@
+{% extends "base.html" %}
+{% block title %}Отчёты{% endblock %}
+{% block content %}
+<div class="container-fluid py-4">
+    <h2 class="mb-4"><i class="bi bi-graph-up me-2"></i>Аналитические отчёты</h2>
+    <div class="row">
+        <div class="col-lg-4 col-md-6 mb-4">
+            <div class="card h-100 shadow-sm">
+                <div class="card-body text-center">
+                    <i class="bi bi-calendar-check text-primary fs-1 mb-3"></i>
+                    <h5>Динамика посещаемости</h5>
+                    <p class="text-muted">График посещаемости по дням</p>
+                    <a href="{{ url_for('department.attendance_dynamics') }}" class="btn btn-primary">Открыть</a>
+                </div>
+            </div>
+        </div>
+        <div class="col-lg-4 col-md-6 mb-4">
+            <div class="card h-100 shadow-sm">
+                <div class="card-body text-center">
+                    <i class="bi bi-trophy text-success fs-1 mb-3"></i>
+                    <h5>Выполнение нормативов</h5>
+                    <p class="text-muted">Статистика по нормативам</p>
+                    <a href="{{ url_for('department.standards_completion') }}" class="btn btn-success">Открыть</a>
+                </div>
+            </div>
+        </div>
+        <div class="col-lg-4 col-md-6 mb-4">
+            <div class="card h-100 shadow-sm">
+                <div class="card-body text-center">
+                    <i class="bi bi-heart-pulse text-info fs-1 mb-3"></i>
+                    <h5>Медицинские группы</h5>
+                    <p class="text-muted">Распределение по медгруппам</p>
+                    <a href="{{ url_for('department.medical_groups') }}" class="btn btn-info">Открыть</a>
+                </div>
+            </div>
+        </div>
+        <div class="col-lg-4 col-md-6 mb-4">
+            <div class="card h-100 shadow-sm">
+                <div class="card-body text-center">
+                    <i class="bi bi-exclamation-triangle text-warning fs-1 mb-3"></i>
+                    <h5>Низкая успеваемость</h5>
+                    <p class="text-muted">Студенты с низким рейтингом</p>
+                    <a href="{{ url_for('department.low_performance') }}" class="btn btn-warning">Открыть</a>
+                </div>
+            </div>
+        </div>
+        <div class="col-lg-4 col-md-6 mb-4">
+            <div class="card h-100 shadow-sm">
+                <div class="card-body text-center">
+                    <i class="bi bi-list-task text-secondary fs-1 mb-3"></i>
+                    <h5>Индивидуальные задания</h5>
+                    <p class="text-muted">Сводка по заданиям</p>
+                    <a href="{{ url_for('department.assignments_summary') }}" class="btn btn-secondary">Открыть</a>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

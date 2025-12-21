@@ -1,0 +1,97 @@
+{% extends "base.html" %}
+{% block title %}Индивидуальные задания{% endblock %}
+{% block content %}
+<div class="container-fluid py-4">
+    <h2 class="mb-4"><i class="bi bi-list-task me-2"></i>Сводка по индивидуальным заданиям</h2>
+    <div class="row mb-4">
+        <div class="col-md-3">
+            <div class="card border-primary">
+                <div class="card-body text-center">
+                    <h3>{{ stats.total }}</h3>
+                    <p class="text-muted mb-0">Всего заданий</p>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card border-success">
+                <div class="card-body text-center">
+                    <h3>{{ stats.completed }}</h3>
+                    <p class="text-muted mb-0">Выполнено</p>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card border-info">
+                <div class="card-body text-center">
+                    <h3>{{ stats.assigned }}</h3>
+                    <p class="text-muted mb-0">Активные</p>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card border-danger">
+                <div class="card-body text-center">
+                    <h3>{{ stats.overdue }}</h3>
+                    <p class="text-muted mb-0">Просрочено</p>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="card shadow-sm mb-4">
+        <div class="card-header bg-white">
+            <h5 class="mb-0">Распределение по типам</h5>
+        </div>
+        <div class="card-body p-0">
+            <div class="table-responsive">
+                <table class="table mb-0">
+                    <thead class="table-light">
+                        <tr>
+                            <th>Тип задания</th>
+                            <th>Количество</th>
+                            <th>Процент</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for item in type_distribution %}
+                        <tr>
+                            <td>{{ item.type|capitalize }}</td>
+                            <td>{{ item.count }}</td>
+                            <td>{{ item.percentage }}%</td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+    <div class="card shadow-sm">
+        <div class="card-header bg-warning text-dark">
+            <h5 class="mb-0">Просроченные задания</h5>
+        </div>
+        <div class="card-body p-0">
+            <div class="table-responsive">
+                <table class="table table-hover mb-0">
+                    <thead class="table-light">
+                        <tr>
+                            <th>Название</th>
+                            <th>Студент</th>
+                            <th>Дедлайн</th>
+                            <th>Бонус</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for assignment in overdue_assignments %}
+                        <tr>
+                            <td>{{ assignment.title }}</td>
+                            <td>{{ assignment.student.full_name }}</td>
+                            <td>{{ assignment.deadline.strftime('%d.%m.%Y') }}</td>
+                            <td>+{{ assignment.bonus_points }}</td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

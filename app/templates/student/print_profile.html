@@ -1,0 +1,298 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{{ student.full_name }} - Профиль для печати</title>
+    <style>
+        @media print {
+            body { margin: 0; padding: 20px; }
+            .no-print { display: none; }
+            .page-break { page-break-after: always; }
+        }
+        
+        body {
+            font-family: Arial, sans-serif;
+            line-height: 1.6;
+            color: #333;
+            max-width: 210mm;
+            margin: 0 auto;
+            padding: 20px;
+        }
+        
+        h1, h2, h3 { color: #2c3e50; }
+        h1 { border-bottom: 3px solid #3498db; padding-bottom: 10px; }
+        h2 { border-bottom: 2px solid #95a5a6; padding-bottom: 5px; margin-top: 30px; }
+        
+        .header {
+            text-align: center;
+            margin-bottom: 30px;
+        }
+        
+        .info-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 10px;
+            margin: 20px 0;
+        }
+        
+        .info-item {
+            padding: 10px;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+        }
+        
+        .info-label {
+            font-weight: bold;
+            color: #7f8c8d;
+        }
+        
+        .rating-box {
+            text-align: center;
+            padding: 20px;
+            border: 3px solid #3498db;
+            border-radius: 10px;
+            margin: 20px 0;
+        }
+        
+        .rating-value {
+            font-size: 48px;
+            font-weight: bold;
+            color: #2c3e50;
+        }
+        
+        .rating-grade {
+            font-size: 24px;
+            font-weight: bold;
+            padding: 10px 20px;
+            border-radius: 5px;
+            display: inline-block;
+            margin-top: 10px;
+        }
+        
+        .grade-excellent { background: #27ae60; color: white; }
+        .grade-good { background: #3498db; color: white; }
+        .grade-satisfactory { background: #f39c12; color: white; }
+        .grade-fail { background: #e74c3c; color: white; }
+        
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 15px 0;
+        }
+        
+        th, td {
+            border: 1px solid #ddd;
+            padding: 8px;
+            text-align: left;
+        }
+        
+        th {
+            background-color: #f8f9fa;
+            font-weight: bold;
+        }
+        
+        .components-grid {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 15px;
+            margin: 20px 0;
+        }
+        
+        .component-box {
+            text-align: center;
+            padding: 15px;
+            border: 2px solid #ddd;
+            border-radius: 8px;
+        }
+        
+        .component-value {
+            font-size: 32px;
+            font-weight: bold;
+            color: #3498db;
+        }
+        
+        .component-label {
+            color: #7f8c8d;
+            font-size: 14px;
+        }
+        
+        .footer {
+            margin-top: 50px;
+            padding-top: 20px;
+            border-top: 2px solid #ddd;
+            text-align: center;
+            color: #7f8c8d;
+        }
+        
+        .print-button {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            padding: 10px 20px;
+            background: #3498db;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 16px;
+        }
+        
+        .print-button:hover {
+            background: #2980b9;
+        }
+    </style>
+</head>
+<body>
+    <button onclick="window.print()" class="print-button no-print">🖨️ Печать</button>
+    
+    <!-- Заголовок -->
+    <div class="header">
+        <h1>ПРОФИЛЬ СТУДЕНТА</h1>
+        <p style="font-size: 18px; color: #7f8c8d;">Система автоматизации физической культуры</p>
+        <p style="font-size: 14px; color: #95a5a6;">Дата формирования: {{ now.strftime('%d.%m.%Y %H:%M') }}</p>
+    </div>
+
+    <!-- Основная информация -->
+    <h2>Личные данные</h2>
+    <div class="info-grid">
+        <div class="info-item">
+            <div class="info-label">ФИО:</div>
+            <div>{{ student.full_name }}</div>
+        </div>
+        <div class="info-item">
+            <div class="info-label">Номер студенческого:</div>
+            <div>{{ student.student_number }}</div>
+        </div>
+        <div class="info-item">
+            <div class="info-label">Дата рождения:</div>
+            <div>{{ student.birth_date.strftime('%d.%m.%Y') }}</div>
+        </div>
+        <div class="info-item">
+            <div class="info-label">Пол:</div>
+            <div>{{ 'Мужской' if student.gender == 'M' else 'Женский' }}</div>
+        </div>
+        <div class="info-item">
+            <div class="info-label">Группа:</div>
+            <div>{{ student.group.name }}</div>
+        </div>
+        <div class="info-item">
+            <div class="info-label">Курс / Семестр:</div>
+            <div>{{ student.group.course }} / {{ student.group.semester }}</div>
+        </div>
+        <div class="info-item">
+            <div class="info-label">Специальность:</div>
+            <div>{{ student.group.specialty.name }}</div>
+        </div>
+        <div class="info-item">
+            <div class="info-label">Медицинская группа:</div>
+            <div>{{ student.medical_group|capitalize }}</div>
+        </div>
+    </div>
+
+    <!-- Итоговый рейтинг -->
+    <h2>Итоговый рейтинг</h2>
+    <div class="rating-box">
+        <div class="rating-value">{{ rating.total }}</div>
+        <div style="color: #7f8c8d; font-size: 18px;">из 100 баллов</div>
+        <div class="rating-grade grade-{{ 'excellent' if rating.grade == 'Отлично' else ('good' if rating.grade == 'Хорошо' else ('satisfactory' if rating.grade == 'Удовлетворительно' else 'fail')) }}">
+            {{ rating.grade }}
+        </div>
+        <div style="margin-top: 15px; font-size: 18px;">
+            {{ 'ЗАЧЁТ ПОЛУЧЕН ✓' if rating.passed else 'ЗАЧЁТ НЕ ПОЛУЧЕН ✗' }}
+        </div>
+    </div>
+
+    <!-- Разбивка по компонентам -->
+    <h2>Компоненты рейтинга</h2>
+    <div class="components-grid">
+        <div class="component-box">
+            <div class="component-value">{{ rating.attendance }}</div>
+            <div class="component-label">Посещаемость<br>(из 30)</div>
+        </div>
+        <div class="component-box">
+            <div class="component-value">{{ rating.module1 }}</div>
+            <div class="component-label">Модуль 1<br>(из 35)</div>
+        </div>
+        <div class="component-box">
+            <div class="component-value">{{ rating.module2 }}</div>
+            <div class="component-label">Модуль 2<br>(из 35)</div>
+        </div>
+        <div class="component-box">
+            <div class="component-value">+{{ rating.bonus }}</div>
+            <div class="component-label">Бонусные<br>баллы</div>
+        </div>
+    </div>
+
+    <!-- Посещаемость -->
+    <h2>Посещаемость</h2>
+    <p><strong>Процент посещаемости:</strong> {{ attendance_pct }}%</p>
+
+    <div class="page-break"></div>
+
+    <!-- Результаты нормативов -->
+    <h2>Результаты контрольных нормативов</h2>
+    {% if results_by_theme %}
+        {% for theme_name, theme_results in results_by_theme.items() %}
+        <h3>{{ theme_name }}</h3>
+        <table>
+            <thead>
+                <tr>
+                    <th>Норматив</th>
+                    <th>Результат</th>
+                    <th>Баллы</th>
+                    <th>Дата</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for result in theme_results %}
+                <tr>
+                    <td>{{ result.standard.name }}</td>
+                    <td><strong>{{ result.result_value }}</strong> {{ result.standard.unit }}</td>
+                    <td>{{ result.points }} из 5</td>
+                    <td>{{ result.date.strftime('%d.%m.%Y') }}</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+        {% endfor %}
+    {% else %}
+    <p style="text-align: center; color: #7f8c8d; padding: 20px;">Нет результатов нормативов</p>
+    {% endif %}
+
+    <!-- Индивидуальные задания -->
+    <h2>Индивидуальные задания</h2>
+    {% if assignments %}
+    <table>
+        <thead>
+            <tr>
+                <th>Название</th>
+                <th>Тип</th>
+                <th>Статус</th>
+                <th>Дедлайн</th>
+                <th>Баллы</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for assignment in assignments %}
+            <tr>
+                <td>{{ assignment.title }}</td>
+                <td>{{ assignment.type|capitalize }}</td>
+                <td>{{ assignment.status|capitalize }}</td>
+                <td>{{ assignment.deadline.strftime('%d.%m.%Y') }}</td>
+                <td>+{{ assignment.bonus_points }}</td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+    {% else %}
+    <p style="text-align: center; color: #7f8c8d; padding: 20px;">Нет индивидуальных заданий</p>
+    {% endif %}
+
+    <!-- Футер -->
+    <div class="footer">
+        <p>Система автоматизации физической культуры</p>
+        <p>Документ сформирован автоматически {{ now.strftime('%d.%m.%Y в %H:%M') }}</p>
+    </div>
+</body>
+</html>

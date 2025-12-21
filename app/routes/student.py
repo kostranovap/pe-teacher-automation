@@ -58,7 +58,7 @@ def profile(student_id):
     attendance_pct = student.get_attendance_percentage()
     
     # Последние 10 записей посещаемости
-    recent_attendance = student.attendance_records.order_by(
+    recent_attendance = student.attendances.order_by(
         Attendance.date.desc()
     ).limit(10).all()
     
@@ -113,7 +113,7 @@ def attendance(student_id):
     date_from = request.args.get('date_from')
     date_to = request.args.get('date_to')
     
-    query = student.attendance_records
+    query = student.attendances
     
     if date_from:
         try:
@@ -325,4 +325,5 @@ def print_profile(student_id):
                          rating=rating,
                          attendance_pct=attendance_pct,
                          results_by_theme=results_by_theme,
-                         assignments=assignments)
+                         assignments=assignments,
+                         now=datetime.now()) 

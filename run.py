@@ -4,6 +4,7 @@ from app.models import (User, Faculty, Specialty, EducationForm, Group,
                        Student, Module, Theme, Standard, StandardScale,
                        Attendance, StandardResult, Assignment, Statement)
 
+
 # Создать приложение
 app = create_app(os.getenv('FLASK_ENV') or 'development')
 

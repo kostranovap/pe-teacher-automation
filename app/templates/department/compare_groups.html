@@ -1,0 +1,80 @@
+{% extends "base.html" %}
+{% block title %}Сравнение групп{% endblock %}
+{% block content %}
+<div class="container-fluid py-4">
+    <h2 class="mb-4"><i class="bi bi-bar-chart me-2"></i>Сравнительный анализ групп</h2>
+    <div class="card shadow-sm mb-4">
+        <div class="card-body">
+            <form method="GET" class="row g-3">
+                <div class="col-md-3">
+                    <label class="form-label">Курс</label>
+                    <select name="course" class="form-select">
+                        <option value="">Все курсы</option>
+                        {% for c in all_courses %}
+                        <option value="{{ c }}" {{ 'selected' if c == selected_course }}>{{ c }} курс</option>
+                        {% endfor %}
+                    </select>
+                </div>
+                <div class="col-md-3">
+                    <label class="form-label">Семестр</label>
+                    <select name="semester" class="form-select">
+                        <option value="">Все семестры</option>
+                        {% for s in all_semesters %}
+                        <option value="{{ s }}" {{ 'selected' if s == selected_semester }}>{{ s }} семестр</option>
+                        {% endfor %}
+                    </select>
+                </div>
+                <div class="col-md-3">
+                    <label class="form-label">Сортировка</label>
+                    <select name="sort" class="form-select">
+                        <option value="rating" {{ 'selected' if sort_by == 'rating' }}>По рейтингу</option>
+                        <option value="attendance" {{ 'selected' if sort_by == 'attendance' }}>По посещаемости</option>
+                        <option value="pass_rate" {{ 'selected' if sort_by == 'pass_rate' }}>По % сдачи</option>
+                    </select>
+                </div>
+                <div class="col-md-3 d-flex align-items-end">
+                    <button type="submit" class="btn btn-primary w-100">Применить</button>
+                </div>
+            </form>
+        </div>
+    </div>
+    <div class="card shadow-sm">
+        <div class="card-body p-0">
+            <div class="table-responsive">
+                <table class="table table-hover mb-0">
+                    <thead class="table-light">
+                        <tr>
+                            <th>№</th>
+                            <th>Группа</th>
+                            <th>Преподаватель</th>
+                            <th>Студентов</th>
+                            <th>Средний рейтинг</th>
+                            <th>Посещаемость</th>
+                            <th>% Сдачи</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for item in comparison %}
+                        <tr>
+                            <td>{{ loop.index }}</td>
+                            <td><strong>{{ item.group.name }}</strong></td>
+                            <td>{{ item.group.teacher.full_name if item.group.teacher else '—' }}</td>
+                            <td>{{ item.students_count }}</td>
+                            <td><span class="badge bg-primary">{{ item.avg_rating }}</span></td>
+                            <td>{{ item.avg_attendance }}%</td>
+                            <td>
+                                <div class="progress" style="height: 20px;">
+                                    <div class="progress-bar bg-{{ 'success' if item.pass_rate >= 80 else 'warning' }}" style="width: {{ item.pass_rate }}%;">
+                                        {{ item.pass_rate }}%
+                                    </div>
+                                </div>
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

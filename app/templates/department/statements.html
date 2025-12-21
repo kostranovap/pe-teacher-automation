@@ -1,0 +1,82 @@
+{% extends "base.html" %}
+{% block title %}Ведомости{% endblock %}
+{% block content %}
+<div class="container-fluid py-4">
+    <h2 class="mb-4"><i class="bi bi-file-earmark-text me-2"></i>Ведомости</h2>
+    
+    <!-- Фильтры -->
+    <div class="card shadow-sm mb-4">
+        <div class="card-body">
+            <form method="GET" class="row g-3">
+                <div class="col-md-4">
+                    <label class="form-label">Преподаватель</label>
+                    <select name="teacher_id" class="form-select">
+                        <option value="">Все преподаватели</option>
+                        {% for teacher in teachers %}
+                        <option value="{{ teacher.id }}" {{ 'selected' if teacher.id == selected_teacher_id }}>{{ teacher.full_name }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+                <div class="col-md-3">
+                    <label class="form-label">Семестр</label>
+                    <select name="semester" class="form-select">
+                        <option value="">Все семестры</option>
+                        {% for s in all_semesters %}
+                        <option value="{{ s }}" {{ 'selected' if s == selected_semester }}>{{ s }} семестр</option>
+                        {% endfor %}
+                    </select>
+                </div>
+                <div class="col-md-2 d-flex align-items-end">
+                    <button type="submit" class="btn btn-primary w-100">Применить</button>
+                </div>
+            </form>
+        </div>
+    </div>
+    
+    <!-- Таблица ведомостей -->
+    <div class="card shadow-sm">
+        <div class="card-body p-0">
+            {% if statements %}
+            <div class="table-responsive">
+                <table class="table table-hover mb-0">
+                    <thead class="table-light">
+                        <tr>
+                            <th>Номер</th>
+                            <th>Группа</th>
+                            <th>Преподаватель</th>
+                            <th>Семестр</th>
+                            <th>Тип</th>
+                            <th>Дата</th>
+                            <th></th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for statement in statements %}
+                        <tr>
+                            <td><strong>{{ statement.number }}</strong></td>
+                            <td>{{ statement.group.name }}</td>
+                            <td>{{ statement.teacher.full_name }}</td>
+                            <td>{{ statement.semester }}</td>
+                            <td><span class="badge bg-info">{{ statement.type|capitalize }}</span></td>
+                            <td>{{ statement.date.strftime('%d.%m.%Y') }}</td>
+                            <td>
+                                <a href="{{ url_for('department.statement_details', statement_id=statement.id) }}" 
+                                   class="btn btn-sm btn-outline-primary">
+                                    <i class="bi bi-eye"></i>
+                                </a>
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+            {% else %}
+            <div class="text-center py-5 text-muted">
+                <i class="bi bi-file-earmark-x fs-1 mb-3"></i>
+                <p>Нет ведомостей</p>
+            </div>
+            {% endif %}
+        </div>
+    </div>
+</div>
+{% endblock %}

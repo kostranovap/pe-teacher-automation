@@ -1,0 +1,53 @@
+{% extends "base.html" %}
+{% block title %}Ведомость {{ statement.number }}{% endblock %}
+{% block content %}
+<div class="container-fluid py-4">
+    <h2 class="mb-4">Ведомость №{{ statement.number }}</h2>
+    <div class="card shadow-sm mb-4">
+        <div class="card-body">
+            <div class="row">
+                <div class="col-md-6"><strong>Группа:</strong> {{ statement.group.name }}</div>
+                <div class="col-md-6"><strong>Преподаватель:</strong> {{ statement.teacher.full_name }}</div>
+                <div class="col-md-6"><strong>Семестр:</strong> {{ statement.semester }}</div>
+                <div class="col-md-6"><strong>Дата:</strong> {{ statement.date.strftime('%d.%m.%Y') }}</div>
+            </div>
+        </div>
+    </div>
+    <div class="card shadow-sm">
+        <div class="card-body p-0">
+            <div class="table-responsive">
+                <table class="table table-hover mb-0">
+                    <thead class="table-light">
+                        <tr>
+                            <th>№</th>
+                            <th>ФИО студента</th>
+                            <th>Посещаемость</th>
+                            <th>Модуль 1</th>
+                            <th>Модуль 2</th>
+                            <th>Итого</th>
+                            <th>Результат</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for item in students_data %}
+                        <tr>
+                            <td>{{ loop.index }}</td>
+                            <td>{{ item.student.full_name }}</td>
+                            <td>{{ item.rating.attendance }}</td>
+                            <td>{{ item.rating.module1 }}</td>
+                            <td>{{ item.rating.module2 }}</td>
+                            <td><strong>{{ item.rating.total }}</strong></td>
+                            <td>
+                                <span class="badge bg-{{ 'success' if item.rating.passed else 'danger' }}">
+                                    {{ item.result }}
+                                </span>
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

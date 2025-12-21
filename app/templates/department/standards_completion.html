@@ -1,0 +1,51 @@
+{% extends "base.html" %}
+{% block title %}Выполнение нормативов{% endblock %}
+{% block content %}
+<div class="container-fluid py-4">
+    <h2 class="mb-4"><i class="bi bi-trophy me-2"></i>Выполнение нормативов</h2>
+    <div class="card shadow-sm mb-4">
+        <div class="card-body">
+            <div class="d-flex gap-2">
+                <span class="text-muted me-2">Сортировка:</span>
+                <a href="?sort=completion" class="btn btn-sm btn-{{ 'primary' if sort_by == 'completion' else 'outline-primary' }}">По выполнению</a>
+                <a href="?sort=avg_points" class="btn btn-sm btn-{{ 'primary' if sort_by == 'avg_points' else 'outline-primary' }}">По среднему баллу</a>
+                <a href="?sort=name" class="btn btn-sm btn-{{ 'primary' if sort_by == 'name' else 'outline-primary' }}">По названию</a>
+            </div>
+        </div>
+    </div>
+    <div class="card shadow-sm">
+        <div class="card-body p-0">
+            <div class="table-responsive">
+                <table class="table table-hover mb-0">
+                    <thead class="table-light">
+                        <tr>
+                            <th>Норматив</th>
+                            <th>Тема</th>
+                            <th>Выполнили</th>
+                            <th>% Выполнения</th>
+                            <th>Средний балл</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for item in completion %}
+                        <tr>
+                            <td><strong>{{ item.standard.name }}</strong></td>
+                            <td>{{ item.standard.theme.name }}</td>
+                            <td>{{ item.completed_by }} / {{ item.total_students }}</td>
+                            <td>
+                                <div class="progress" style="height: 20px;">
+                                    <div class="progress-bar bg-{{ 'success' if item.completion_rate >= 80 else 'warning' }}" style="width: {{ item.completion_rate }}%;">
+                                        {{ item.completion_rate }}%
+                                    </div>
+                                </div>
+                            </td>
+                            <td><span class="badge bg-primary">{{ item.avg_points }} из 5</span></td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

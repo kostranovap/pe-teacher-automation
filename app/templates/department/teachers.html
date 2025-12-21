@@ -1,0 +1,100 @@
+{% extends "base.html" %}
+
+{% block title %}Статистика по преподавателям{% endblock %}
+
+{% block content %}
+<div class="container-fluid py-4">
+    <nav aria-label="breadcrumb" class="mb-4">
+        <ol class="breadcrumb">
+            <li class="breadcrumb-item"><a href="{{ url_for('department.dashboard') }}">Панель</a></li>
+            <li class="breadcrumb-item active">Преподаватели</li>
+        </ol>
+    </nav>
+
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h2><i class="bi bi-person-badge me-2"></i>Статистика по преподавателям</h2>
+    </div>
+
+    <!-- Сортировка -->
+    <div class="card shadow-sm mb-4">
+        <div class="card-body">
+            <div class="d-flex gap-2 flex-wrap">
+                <span class="text-muted me-2">Сортировка:</span>
+                <a href="?sort=rating" class="btn btn-sm btn-{{ 'primary' if sort_by == 'rating' else 'outline-primary' }}">
+                    По рейтингу
+                </a>
+                <a href="?sort=attendance" class="btn btn-sm btn-{{ 'primary' if sort_by == 'attendance' else 'outline-primary' }}">
+                    По посещаемости
+                </a>
+                <a href="?sort=pass_rate" class="btn btn-sm btn-{{ 'primary' if sort_by == 'pass_rate' else 'outline-primary' }}">
+                    По проценту сдачи
+                </a>
+                <a href="?sort=students" class="btn btn-sm btn-{{ 'primary' if sort_by == 'students' else 'outline-primary' }}">
+                    По количеству студентов
+                </a>
+            </div>
+        </div>
+    </div>
+
+    <!-- Таблица преподавателей -->
+    <div class="card shadow-sm">
+        <div class="card-body p-0">
+            <div class="table-responsive">
+                <table class="table table-hover mb-0">
+                    <thead class="table-light">
+                        <tr>
+                            <th>№</th>
+                            <th>Преподаватель</th>
+                            <th>Групп</th>
+                            <th>Студентов</th>
+                            <th>Средний рейтинг</th>
+                            <th>Посещаемость</th>
+                            <th>Сдали / Не сдали</th>
+                            <th>% Сдачи</th>
+                            <th></th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for item in teachers_data %}
+                        <tr>
+                            <td>{{ loop.index }}</td>
+                            <td>
+                                <strong>{{ item.teacher.full_name }}</strong>
+                                <br>
+                                <small class="text-muted">{{ item.teacher.email }}</small>
+                            </td>
+                            <td>{{ item.groups_count }}</td>
+                            <td>{{ item.students_count }}</td>
+                            <td>
+                                <span class="badge bg-{{ 'success' if item.avg_rating >= 75 else ('primary' if item.avg_rating >= 60 else 'warning') }}">
+                                    {{ item.avg_rating }}
+                                </span>
+                            </td>
+                            <td>{{ item.avg_attendance }}%</td>
+                            <td>
+                                <span class="text-success">{{ item.passed }}</span> / 
+                                <span class="text-danger">{{ item.failed }}</span>
+                            </td>
+                            <td>
+                                <div class="progress" style="height: 20px;">
+                                    <div class="progress-bar bg-{{ 'success' if item.pass_rate >= 80 else ('warning' if item.pass_rate >= 60 else 'danger') }}" 
+                                         style="width: {{ item.pass_rate }}%;">
+                                        {{ item.pass_rate }}%
+                                    </div>
+                                </div>
+                            </td>
+                            <td>
+                                <a href="{{ url_for('department.teacher_details', teacher_id=item.teacher.id) }}" 
+                                   class="btn btn-sm btn-outline-primary">
+                                    <i class="bi bi-eye"></i>
+                                </a>
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
