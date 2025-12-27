@@ -90,7 +90,7 @@ def calculate_student_rating(student_id):
     
     bonus_points = db.session.query(db.func.sum(Assignment.bonus_points)).filter(
         Assignment.student_id == student_id,
-        Assignment.status == 'выполнено'
+        Assignment.status.in_(['выполнено', 'проверено'])
     ).scalar() or 0
     
     total = attendance_points + module1_points + module2_points + bonus_points

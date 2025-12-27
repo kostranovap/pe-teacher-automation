@@ -55,8 +55,15 @@
                         <label for="student_id" class="form-label">
                             Студент <span class="text-danger">*</span>
                         </label>
-                        <select class="form-select" id="student_id" name="student_id" required disabled>
-                            <option value="">-- Сначала выберите группу --</option>
+                        <select class="form-select" id="student_id" name="student_id" required>
+                            <option value="">-- Выберите студента --</option>
+                            {% for group in groups %}
+                                {% for student in group.students.all() %}
+                                <option value="{{ student.id }}">
+                                    {{ student.full_name }} ({{ student.student_number }}) - {{ group.name }}
+                                </option>
+                                {% endfor %}
+                            {% endfor %}
                         </select>
                     </div>
                     {% else %}
@@ -173,34 +180,47 @@
 </div>
 {% endblock %}
 
-{% block extra_js %}
-{% if not assignment %}
+{% block scripts %}
 <script>
-// Load students when group is selected
-document.getElementById('group_id').addEventListener('change', async function() {
-    const groupId = this.value;
+document.addEventListener('DOMContentLoaded', function() {
+    const groupSelect = document.getElementById('group_id');
     const studentSelect = document.getElementById('student_id');
     
-    studentSelect.innerHTML = '<option value="">Загрузка...</option>';
-    studentSelect.disabled = true;
-    
-    if (!groupId) {
-        studentSelect.innerHTML = '<option value="">-- Сначала выберите группу --</option>';
-        return;
-    }
-    
-    try {
-        // Fetch students via API or use existing data
-        // For now, we'll use a simple approach
-        studentSelect.disabled = false;
-        studentSelect.innerHTML = '<option value="">-- Выберите студента --</option>';
+    if (groupSelect && studentSelect) {
+        groupSelect.addEventListener('change', function() {
+            const groupId = this.value;
+            studentSelect.innerHTML = '<option value="">-- Выберите студента --</option>';
+            studentSelect.disabled = true;
+            
+            if (!groupId) return;
+            
+            studentSelect.innerHTML = '<option value="">Загрузка...</option>';
+            
+            fetch(`/teacher/api/group/${groupId}/students`)
+                .then(r => r.json())
+                .then(students => {
+                    studentSelect.innerHTML = '<option value="">-- Выберите студента --</option>';
+                    students.forEach(s => {
+                        const opt = document.createElement('option');
+                        opt.value = s.id;
+                        opt.textContent = `${s.full_name} (${s.student_number})`;
+                        studentSelect.appendChild(opt);
+                    });
+                    studentSelect.disabled = false;
+                    if (students.length === 0) {
+                        studentSelect.innerHTML = '<option value="">В группе нет студентов</option>';
+                    }
+                })
+                .catch(err => {
+                    console.error(err);
+                    studentSelect.innerHTML = '<option value="">Ошибка загрузки</option>';
+                });
+        });
         
-        showToast('Выберите студента из списка', 'info');
-    } catch (error) {
-        console.error('Error loading students:', error);
-        studentSelect.innerHTML = '<option value="">Ошибка загрузки</option>';
+        if (groupSelect.value) {
+            groupSelect.dispatchEvent(new Event('change'));
+        }
     }
 });
 </script>
-{% endif %}
 {% endblock %}

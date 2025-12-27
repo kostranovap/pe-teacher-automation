@@ -27,6 +27,12 @@ def create_app(config_name=None):
     db.init_app(app)
     login_manager.init_app(app)
     migrate.init_app(app, db)
+
+    @app.context_processor
+    def inject_utilities():
+        from datetime import datetime
+        return {'now': datetime.now, 'datetime': datetime}
+    
     csrf.init_app(app)
     
     # Настройка Login Manager

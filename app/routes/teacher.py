@@ -12,6 +12,7 @@ from app.forms import StatementForm
 from werkzeug.utils import secure_filename  
 from app.utils import get_upload_path  
 
+
 bp = Blueprint('teacher', __name__, url_prefix='/teacher')
 
 
@@ -295,7 +296,7 @@ def attendance_history(group_id):
     
     students_stats = []
     for student in students:
-        query = student.attendance_records
+        query = student.attendances
         
         try:
             from_date = datetime.strptime(date_from, '%Y-%m-%d').date()
@@ -631,6 +632,26 @@ def assignments():
                          selected_group_id=group_id,
                          selected_status=status)
 
+
+@bp.route('/api/group/<int:group_id>/students')
+@login_required
+@teacher_required
+def get_group_students(group_id):
+    """API endpoint для получения списка студентов группы"""
+    from flask import jsonify
+    
+    group = Group.query.get_or_404(group_id)
+    
+    if current_user.role not in ['admin', 'department_head']:
+        if group.teacher_id != current_user.id:
+            return jsonify({'error': 'Access denied'}), 403
+    
+    students = Student.query.filter_by(group_id=group_id).order_by(Student.full_name).all()
+    
+    return jsonify([
+        {'id': s.id, 'full_name': s.full_name, 'student_number': s.student_number}
+        for s in students
+    ])
 
 @bp.route('/assignments/create', methods=['GET', 'POST'])
 @login_required

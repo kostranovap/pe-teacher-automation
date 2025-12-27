@@ -1,20 +1,28 @@
-# Flask и расширения
-Flask==2.3.3
-Flask-SQLAlchemy==3.0.5
-Flask-Login==0.6.2
-Flask-Migrate==4.0.5
-Flask-WTF==1.1.1
 
-# База данных
-psycopg2-binary==2.9.7
+Flask==3.0.3
+Werkzeug==3.0.3
 
-# Excel
-openpyxl==3.1.2
+Flask-Login==0.6.3
+Flask-SQLAlchemy==3.1.1
+Flask-WTF==1.2.1            
+Flask-Migrate==4.0.7      
 
-# Утилиты
-python-dotenv==1.0.0
-email-validator==2.0.0
+WTForms==3.1.2              
+email-validator==2.1.1      
 
-# Development
-pytest==7.4.2
-pytest-cov==4.1.0
+SQLAlchemy==2.0.30         
+psycopg2-binary==2.9.9      
+alembic==1.13.1             
+
+openpyxl==3.1.2            
+Pillow==10.3.0              
+
+python-dotenv==1.0.1       
+
+python-dateutil==2.9.0      
+click==8.1.7              
+blinker==1.8.2             
+itsdangerous==2.2.0         
+MarkupSafe==2.1.5           
+
+gunicorn==22.0.0

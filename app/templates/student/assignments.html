@@ -1,192 +1,170 @@
 {% extends "base.html" %}
-
-{% block title %}Индивидуальные задания - {{ student.full_name }}{% endblock %}
-
+{% block title %}Индивидуальные задания{% endblock %}
 {% block content %}
 <div class="container-fluid py-4">
     <nav aria-label="breadcrumb" class="mb-4">
         <ol class="breadcrumb">
-            <li class="breadcrumb-item"><a href="{{ url_for('student.search') }}">Поиск</a></li>
-            <li class="breadcrumb-item"><a href="{{ url_for('student.profile', student_id=student.id) }}">{{ student.full_name }}</a></li>
+            <li class="breadcrumb-item"><a href="{{ url_for('student.profile', student_id=student.id) }}">Профиль</a></li>
             <li class="breadcrumb-item active">Индивидуальные задания</li>
         </ol>
     </nav>
-
-    <div class="d-flex justify-content-between align-items-center mb-4">
-        <h2><i class="bi bi-list-task me-2"></i>Индивидуальные задания</h2>
-        <a href="{{ url_for('student.profile', student_id=student.id) }}" class="btn btn-outline-secondary">
-            <i class="bi bi-arrow-left me-1"></i>Назад к профилю
-        </a>
-    </div>
-
+    
+    <h2 class="mb-4"><i class="bi bi-list-task me-2"></i>Индивидуальные задания</h2>
+    
     <!-- Статистика -->
     <div class="row mb-4">
-        <div class="col-lg-3 col-md-6 mb-3">
+        <div class="col-md-3">
             <div class="card border-primary">
                 <div class="card-body text-center">
-                    <i class="bi bi-list-check text-primary fs-1"></i>
-                    <h3 class="mt-2">{{ stats.total }}</h3>
+                    <h3>{{ stats.total }}</h3>
                     <p class="text-muted mb-0">Всего заданий</p>
                 </div>
             </div>
         </div>
-        <div class="col-lg-3 col-md-6 mb-3">
+        <div class="col-md-3">
             <div class="card border-info">
                 <div class="card-body text-center">
-                    <i class="bi bi-hourglass-split text-info fs-1"></i>
-                    <h3 class="mt-2">{{ stats.active }}</h3>
+                    <h3>{{ stats.active }}</h3>
                     <p class="text-muted mb-0">Активные</p>
                 </div>
             </div>
         </div>
-        <div class="col-lg-3 col-md-6 mb-3">
+        <div class="col-md-3">
             <div class="card border-success">
                 <div class="card-body text-center">
-                    <i class="bi bi-check-circle text-success fs-1"></i>
-                    <h3 class="mt-2">{{ stats.completed }}</h3>
+                    <h3>{{ stats.completed }}</h3>
                     <p class="text-muted mb-0">Выполнено</p>
                 </div>
             </div>
         </div>
-        <div class="col-lg-3 col-md-6 mb-3">
+        <div class="col-md-3">
             <div class="card border-warning">
                 <div class="card-body text-center">
-                    <i class="bi bi-star text-warning fs-1"></i>
-                    <h3 class="mt-2">+{{ stats.total_bonus }}</h3>
-                    <p class="text-muted mb-0">Бонусных баллов</p>
+                    <h3>+{{ stats.total_bonus }}</h3>
+                    <p class="text-muted mb-0">Бонусные баллы</p>
                 </div>
             </div>
         </div>
     </div>
-
+    
     <!-- Фильтр -->
-    <div class="mb-4">
-        <div class="btn-group" role="group">
-            <a href="{{ url_for('student.assignments', student_id=student.id) }}" 
-               class="btn btn-outline-primary {{ 'active' if not status_filter }}">
-                Все
-            </a>
-            <a href="{{ url_for('student.assignments', student_id=student.id, status='назначено') }}" 
-               class="btn btn-outline-info {{ 'active' if status_filter == 'назначено' }}">
-                Активные
-            </a>
-            <a href="{{ url_for('student.assignments', student_id=student.id, status='выполнено') }}" 
-               class="btn btn-outline-success {{ 'active' if status_filter == 'выполнено' }}">
-                Выполненные
-            </a>
-            <a href="{{ url_for('student.assignments', student_id=student.id, status='просрочено') }}" 
-               class="btn btn-outline-danger {{ 'active' if status_filter == 'просрочено' }}">
-                Просроченные
-            </a>
+    <div class="card shadow-sm mb-4">
+        <div class="card-body">
+            <div class="btn-group" role="group">
+                <a href="?status=" class="btn btn-sm btn-{{ 'primary' if not status_filter else 'outline-primary' }}">Все</a>
+                <a href="?status=назначено" class="btn btn-sm btn-{{ 'primary' if status_filter == 'назначено' else 'outline-primary' }}">Назначено</a>
+                <a href="?status=в_работе" class="btn btn-sm btn-{{ 'primary' if status_filter == 'в_работе' else 'outline-primary' }}">В работе</a>
+                <a href="?status=выполнено" class="btn btn-sm btn-{{ 'primary' if status_filter == 'выполнено' else 'outline-primary' }}">Выполнено</a>
+                <a href="?status=просрочено" class="btn btn-sm btn-{{ 'primary' if status_filter == 'просрочено' else 'outline-primary' }}">Просрочено</a>
+            </div>
         </div>
     </div>
-
-    <!-- Активные задания -->
-    {% if active_assignments %}
-    <div class="card shadow-sm mb-4">
-        <div class="card-header bg-info text-white">
-            <h5 class="mb-0"><i class="bi bi-hourglass-split me-2"></i>Активные задания</h5>
-        </div>
-        <div class="card-body">
-            {% for assignment in active_assignments %}
-            <div class="card mb-3 border-{{ 'warning' if (assignment.deadline - now()).days <= 3 else 'info' }}">
-                <div class="card-body">
-                    <div class="d-flex justify-content-between align-items-start mb-2">
-                        <div class="flex-grow-1">
-                            <h5 class="card-title">{{ assignment.title }}</h5>
-                            <span class="badge bg-info">{{ assignment.type|capitalize }}</span>
-                        </div>
-                        <span class="badge bg-success fs-6">+{{ assignment.bonus_points }} баллов</span>
-                    </div>
-                    <p class="card-text">{{ assignment.description }}</p>
+    
+    <!-- Список заданий -->
+    {% if assignments %}
+    <div class="row">
+        {% for assignment in assignments %}
+        <div class="col-md-6 mb-3">
+            {% if assignment.status == 'назначено' %}
+                {% set card_class = 'border-info' %}
+                {% set header_class = 'bg-info text-white' %}
+                {% set badge_class = 'bg-info' %}
+            {% elif assignment.status == 'в_работе' %}
+                {% set card_class = 'border-primary' %}
+                {% set header_class = 'bg-primary text-white' %}
+                {% set badge_class = 'bg-primary' %}
+            {% elif assignment.status == 'выполнено' %}
+                {% set card_class = 'border-success' %}
+                {% set header_class = 'bg-success text-white' %}
+                {% set badge_class = 'bg-success' %}
+            {% elif assignment.status == 'просрочено' %}
+                {% set card_class = 'border-danger' %}
+                {% set header_class = 'bg-danger text-white' %}
+                {% set badge_class = 'bg-danger' %}
+            {% else %}
+                {% set card_class = 'border-secondary' %}
+                {% set header_class = 'bg-secondary text-white' %}
+                {% set badge_class = 'bg-secondary' %}
+            {% endif %}
+            
+            <div class="card {{ card_class }} h-100">
+                <div class="card-header {{ header_class }}">
                     <div class="d-flex justify-content-between align-items-center">
-                        <span class="text-muted small">
-                            <i class="bi bi-calendar me-1"></i>
-                            Дедлайн: {{ assignment.deadline.strftime('%d.%m.%Y') }}
+                        <h5 class="mb-0">{{ assignment.title }}</h5>
+                        <span class="badge {{ badge_class }}">
+                            {% if assignment.status == 'назначено' %}Назначено
+                            {% elif assignment.status == 'в_работе' %}В работе
+                            {% elif assignment.status == 'выполнено' %}Выполнено
+                            {% elif assignment.status == 'просрочено' %}Просрочено
+                            {% else %}{{ assignment.status|capitalize }}
+                            {% endif %}
                         </span>
-                        {% set days_left = (assignment.deadline - now()).days %}
-                        {% if days_left <= 3 %}
-                        <span class="badge bg-danger">
-                            <i class="bi bi-exclamation-triangle me-1"></i>
-                            Осталось {{ days_left }} дн.
-                        </span>
-                        {% else %}
-                        <span class="badge bg-secondary">
-                            Осталось {{ days_left }} дн.
-                        </span>
+                    </div>
+                </div>
+                <div class="card-body">
+                    <p class="mb-2">
+                        <strong>Тип:</strong> 
+                        <span class="badge bg-secondary">{{ assignment.type|capitalize }}</span>
+                    </p>
+                    
+                    {% if assignment.description %}
+                    <p class="mb-2"><strong>Описание:</strong><br>{{ assignment.description }}</p>
+                    {% endif %}
+                    
+                    <p class="mb-2">
+                        <strong>Дедлайн:</strong> {{ assignment.deadline.strftime('%d.%m.%Y') if assignment.deadline else '—' }}
+                        
+                        {% if assignment.status not in ['выполнено', 'просрочено'] and assignment.deadline %}
+                            {% set deadline_date = assignment.deadline if assignment.deadline.__class__.__name__ == 'date' else assignment.deadline.date() %}
+                            {% set today = now.date() if now else None %}
+                            {% if today and deadline_date %}
+                                {% set days_left = (deadline_date - today).days %}
+                                {% if days_left <= 3 and days_left >= 0 %}
+                                <span class="badge bg-warning text-dark ms-2">
+                                    <i class="bi bi-clock"></i> Осталось {{ days_left }} дн.
+                                </span>
+                                {% elif days_left < 0 %}
+                                <span class="badge bg-danger ms-2">
+                                    <i class="bi bi-exclamation-triangle"></i> Просрочено
+                                </span>
+                                {% endif %}
+                            {% endif %}
                         {% endif %}
-                    </div>
+                    </p>
+                    
+                    {% if assignment.completion_date %}
+                    <p class="mb-2">
+                        <strong>Дата выполнения:</strong> 
+                        {{ assignment.completion_date.strftime('%d.%m.%Y %H:%M') if assignment.completion_date else '—' }}
+                    </p>
+                    {% endif %}
+                    
+                    <p class="mb-0">
+                        <strong>Бонус:</strong> 
+                        <span class="badge bg-warning text-dark">+{{ assignment.bonus_points }} баллов</span>
+                    </p>
+                    
+                    {% if assignment.created_at %}
+                    <p class="text-muted small mt-2 mb-0">
+                        Назначено: {{ assignment.created_at.strftime('%d.%m.%Y') }}
+                    </p>
+                    {% endif %}
                 </div>
             </div>
-            {% endfor %}
         </div>
+        {% endfor %}
     </div>
-    {% endif %}
-
-    <!-- Выполненные задания -->
-    {% if completed_assignments %}
-    <div class="card shadow-sm mb-4">
-        <div class="card-header bg-success text-white">
-            <h5 class="mb-0"><i class="bi bi-check-circle me-2"></i>Выполненные задания</h5>
-        </div>
-        <div class="card-body">
-            {% for assignment in completed_assignments %}
-            <div class="card mb-3 border-success">
-                <div class="card-body">
-                    <div class="d-flex justify-content-between align-items-start mb-2">
-                        <div class="flex-grow-1">
-                            <h5 class="card-title">{{ assignment.title }}</h5>
-                            <span class="badge bg-success">Выполнено</span>
-                        </div>
-                        <span class="badge bg-success fs-6">+{{ assignment.bonus_points }} баллов</span>
-                    </div>
-                    <p class="card-text">{{ assignment.description }}</p>
-                    <div class="text-muted small">
-                        <i class="bi bi-check me-1"></i>
-                        Выполнено: {{ assignment.completion_date.strftime('%d.%m.%Y') }}
-                    </div>
-                </div>
-            </div>
-            {% endfor %}
-        </div>
-    </div>
-    {% endif %}
-
-    <!-- Просроченные задания -->
-    {% if overdue_assignments %}
-    <div class="card shadow-sm mb-4">
-        <div class="card-header bg-danger text-white">
-            <h5 class="mb-0"><i class="bi bi-x-circle me-2"></i>Просроченные задания</h5>
-        </div>
-        <div class="card-body">
-            {% for assignment in overdue_assignments %}
-            <div class="card mb-3 border-danger">
-                <div class="card-body">
-                    <div class="d-flex justify-content-between align-items-start mb-2">
-                        <div class="flex-grow-1">
-                            <h5 class="card-title">{{ assignment.title }}</h5>
-                            <span class="badge bg-danger">Просрочено</span>
-                        </div>
-                        <span class="badge bg-secondary fs-6">+{{ assignment.bonus_points }} баллов</span>
-                    </div>
-                    <p class="card-text">{{ assignment.description }}</p>
-                    <div class="text-danger small">
-                        <i class="bi bi-exclamation-triangle me-1"></i>
-                        Дедлайн был: {{ assignment.deadline.strftime('%d.%m.%Y') }}
-                    </div>
-                </div>
-            </div>
-            {% endfor %}
-        </div>
-    </div>
-    {% endif %}
-
-    <!-- Если нет заданий -->
-    {% if not active_assignments and not completed_assignments and not overdue_assignments %}
+    {% else %}
     <div class="card shadow-sm">
-        <div class="card-body text-center py-5 text-muted">
-            <i class="bi bi-list-task fs-1 mb-3"></i>
-            <p>Нет индивидуальных заданий</p>
+        <div class="card-body text-center py-5">
+            <i class="bi bi-inbox fs-1 text-muted mb-3"></i>
+            <h5 class="text-muted">Нет индивидуальных заданий</h5>
+            {% if status_filter %}
+            <p class="text-muted">Попробуйте изменить фильтр</p>
+            <a href="{{ url_for('student.assignments', student_id=student.id) }}" class="btn btn-outline-primary">
+                Показать все задания
+            </a>
+            {% endif %}
         </div>
     </div>
     {% endif %}

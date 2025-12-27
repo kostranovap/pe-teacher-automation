@@ -343,7 +343,7 @@
                                         <div>
                                             <strong>{{ assignment.title }}</strong>
                                             <p class="mb-1 small text-muted">
-                                                Выполнено: {{ assignment.completion_date.strftime('%d.%m.%Y') }}
+                                                Выполнено: {{ assignment.completion_date.strftime('%d.%m.%Y') if assignment.completion_date else '—' }}
                                             </p>
                                         </div>
                                         <div>

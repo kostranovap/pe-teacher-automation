@@ -202,42 +202,35 @@ def results(student_id):
 
 @bp.route('/<int:student_id>/assignments')
 def assignments(student_id):
-    """Индивидуальные задания студента (без авторизации)"""
     student = Student.query.get_or_404(student_id)
     
     # Фильтр по статусу
     status_filter = request.args.get('status')
     
+    # Получить задания
     query = Assignment.query.filter_by(student_id=student_id)
     
     if status_filter:
         query = query.filter_by(status=status_filter)
     
-    all_assignments = query.order_by(Assignment.deadline.desc()).all()
-    
-    # Группировка по статусу
-    active = [a for a in all_assignments if a.status == 'назначено']
-    completed = [a for a in all_assignments if a.status == 'выполнено']
-    overdue = [a for a in all_assignments if a.status == 'просрочено']
+    assignments = query.order_by(Assignment.deadline.desc()).all()
     
     # Статистика
-    total_bonus = sum(a.bonus_points for a in completed)
+    all_assignments = Assignment.query.filter_by(student_id=student_id).all()
     
     stats = {
         'total': len(all_assignments),
-        'active': len(active),
-        'completed': len(completed),
-        'overdue': len(overdue),
-        'total_bonus': total_bonus
+        'active': len([a for a in all_assignments if a.status in ['назначено', 'в_работе']]),
+        'completed': len([a for a in all_assignments if a.status == 'выполнено']),
+        'total_bonus': sum([a.bonus_points for a in all_assignments if a.status == 'выполнено'])
     }
     
     return render_template('student/assignments.html',
                          student=student,
-                         active_assignments=active,
-                         completed_assignments=completed,
-                         overdue_assignments=overdue,
+                         assignments=assignments,
                          stats=stats,
-                         status_filter=status_filter)
+                         status_filter=status_filter,
+                         now=datetime.now())
 
 
 @bp.route('/<int:student_id>/rating')
